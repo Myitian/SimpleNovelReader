@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.1.2
+// @version       0.2
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -11,7 +11,7 @@
 // @match         *://*.52bqg.org/book_*/*.html
 // @match         *://*.bqg78.cc/book/*/*.html
 // @match         *://*.beqege.com/*/*.html
-// @grant         none
+// @grant         GM_registerMenuCommand
 // ==/UserScript==
 
 /**
@@ -29,30 +29,34 @@ function extractPageData(doc) {
     /**
      * @type {string}
      */
-    var prev = doc.querySelector("#prev_url,#pb_prev").href;
+    var prev = (doc.querySelector("#prev_url,#pb_prev") ?? doc.querySelector(".bottem1>a:nth-child(1)")).href;
     /**
      * @type {string}
      */
-    var info = doc.querySelector("#info_url,#pb_mulu").href;
+    var info = (doc.querySelector("#info_url,#pb_mulu") ?? doc.querySelector(".bottem1>a:nth-child(2)")).href;
     /**
-     * @type {?string}
+     * @type {string}
      */
-    var next = doc.querySelector("#next_url,#pb_next").href;
+    var next = (doc.querySelector("#next_url,#pb_next") ?? doc.querySelector(".bottem1>a:nth-child(3)")).href;
     return {
+        pageTitle: doc.title,
         title: title,
         content: content,
         prev: prev.endsWith(".html") ? prev : "",
+        info: info,
         next: next.endsWith(".html") ? next : ""
     }
 }
 /**
- * @param {{title:string,content:string,prev:?string,next:?string}} data
+ * @param {{pageTitle:string,title:string,content:string,prev:string,info:string,next:string}} data
  */
 function loadPageData(data) {
-    document.querySelector("#myt-snr-title").innerText = data.title;
-    document.querySelector("#myt-snr-content").innerHTML = data.content;
-    document.querySelector("#myt-snr-prev").dataset.href = data.prev;
-    document.querySelector("#myt-snr-next").dataset.href = data.next;
+    document.title = data.pageTitle;
+    SimpleNovelReader.querySelector("#myt-snr-title").innerText = data.title;
+    SimpleNovelReader.querySelector("#myt-snr-content").innerHTML = data.content;
+    SimpleNovelReader.querySelector("#myt-snr-prev").dataset.href = data.prev;
+    SimpleNovelReader.querySelector("#myt-snr-info").dataset.href = data.info;
+    SimpleNovelReader.querySelector("#myt-snr-next").dataset.href = data.next;
 }
 
 /**
@@ -93,11 +97,10 @@ function get(url, responseType = "document", timeout = 0) {
 }
 
 function detectHashChange() {
-    var snr = SimpleNovelReader.querySelector("#myt-snr-base");
     if (window.location.hash == "#simple-novel-reader") {
-        snr.style.top = "0";
+        SimpleNovelReader.style.top = "0";
     } else {
-        snr.style.top = "200%";
+        SimpleNovelReader.style.top = "200%";
     }
 }
 
@@ -117,6 +120,7 @@ function show(url = undefined) {
         var newUrl = new URL(url);
         newUrl.hash = "#simple-novel-reader";
         history.pushState(null, "", newUrl.toString());
+        SimpleNovelReader.scrollTop = 0
         loadUrl(url);
     }
 }
@@ -147,19 +151,21 @@ function switchChapter(event) {
 }
 
 function main() {
+    SimpleNovelReader.id = "myt-snr-root";
+    SimpleNovelReader.dataset.colorScheme = "auto"
     SimpleNovelReader.innerHTML = `
-<div id="myt-snr-base" class="x-color-scheme-auto">
+<div id="myt-snr-main">
     <header id="myt-snr-header">
         <h1 id="myt-snr-title"></h1>
         <div id="myt-snr-tools">
             <button id="myt-snr-exit" class="x-myt-button">退出阅读模式</button>
             <button id="myt-snr-settings" class="x-myt-button" disabled>样式设置</button>
         </div>
-        <!-- WORK IN PROGRESS
+        <!-- WORK IN PROGRESS --
         <ul id="myt-snr-setting-items" hidden>
             <li>
                 <input id="myt-snr-setting-font-sans-serif" type="radio" name="font-type">
-                <label for="myt-snr-setting-font-sans-serif" checked="true">无衬线</label>
+                <label for="myt-snr-setting-font-sans-serif" checked>无衬线</label>
                 <input id="myt-snr-setting-font-radio-serif" type="radio" name="font-type">
                 <label for="myt-snr-setting-font-radio-serif">衬线</label>
             </li>
@@ -182,10 +188,10 @@ function main() {
                 <button id="myt-snr-setting-line-space-inc" class="x-myt-button">+</button>
             </li>
             <li>
-                <button id="myt-snr-setting-color-light" class="x-myt-button x-color-scheme-light">浅色</button>
-                <button id="myt-snr-setting-color-dark" class="x-myt-button x-color-scheme-dark">深色</button>
-                <button id="myt-snr-setting-color-sepia" class="x-myt-button x-color-scheme-sepia">纸墨</button>
-                <button id="myt-snr-setting-color-auto" class="x-myt-button x-color-scheme-auto">自动</button>
+                <button id="myt-snr-setting-color-light" class="x-myt-button" data-color-scheme="light">浅色</button>
+                <button id="myt-snr-setting-color-dark" class="x-myt-button" data-color-scheme="dark">深色</button>
+                <button id="myt-snr-setting-color-sepia" class="x-myt-button" data-color-scheme="sepia">纸墨</button>
+                <button id="myt-snr-setting-color-auto" class="x-myt-button" data-color-scheme="auto">自动</button>
                 <button id="myt-snr-setting-style-custom" class="x-myt-button x-custom-style"
                     data-style-name="">自定义样式</button>
                 <input>
@@ -195,16 +201,18 @@ function main() {
     </header>
     <nav id="myt-snr-nav">
         <button id="myt-snr-prev" class="x-myt-button x-left">上一章</button>
-        <button id="myt-snr-info" class="x-myt-button x-middle">章节列表</button>
+        <button id="myt-snr-info" class="x-myt-button x-middle" disabled>章节列表</button>
         <button id="myt-snr-next" class="x-myt-button x-right">下一章</button>
     </nav>
     <article id="myt-snr-content">
     </article>
+    <footer id="myt-snr-footer">
+    </footer>
 </div>
 <style id="myt-snr-custom-style">
 </style>
 <style>
-    #myt-snr-base {
+    #myt-snr-root {
         box-sizing: border-box;
         position: fixed;
         width: 100%;
@@ -213,36 +221,40 @@ function main() {
         left: 0;
         overflow: scroll;
         background: var(--x-snr-background-level-0);
-    }
-
-    #myt-snr-base * {
         color: var(--x-snr-foreground-level-0);
         font-size: medium;
         font-family: sans-serif;
         line-height: revert;
     }
 
-    #myt-snr-base *::selection {
+    #myt-snr-root * {
+        color: inherit;
+        font-size: inherit;
+        font-family: inherit;
+        line-height: inherit;
+    }
+
+    #myt-snr-root *::selection {
         background: var(--x-snr-background-selected-text);
         color: var(--x-snr-foreground-selected-text);
     }
 
-    #myt-snr-base a {
+    #myt-snr-root a {
         background: var(--x-snr-background-link);
         color: var(--x-snr-foreground-link);
         text-decoration: underline var(--x-snr-foreground-level-0);
     }
 
-    #myt-snr-base a:visited {
+    #myt-snr-root a:visited {
         color: var(--x-snr-foreground-visited-link);
     }
 
-    #myt-snr-base a::selection {
+    #myt-snr-root a::selection {
         background: var(--x-snr-background-selected-link);
         color: var(--x-snr-foreground-selected-link);
     }
 
-    #myt-snr-base>* {
+    #myt-snr-main>* {
         padding: 1em;
     }
 
@@ -250,6 +262,11 @@ function main() {
         text-align: center;
         max-width: 40rem;
         margin: auto;
+    }
+
+    #myt-snr-tools .x-myt-button {
+        margin-top: 0;
+        margin-bottom: 0;
     }
 
     #myt-snr-nav {
@@ -269,12 +286,12 @@ function main() {
         margin: auto;
     }
 
-    #myt-snr-base h1 {
+    #myt-snr-root h1 {
         margin: 0;
         font-size: revert;
     }
 
-    #myt-snr-base p {
+    #myt-snr-root p {
         text-indent: 2em;
         margin: revert;
         padding: revert;
@@ -310,7 +327,7 @@ function main() {
         margin: auto;
     }
 
-    .x-color-scheme-light {
+    [data-color-scheme=light] {
         --x-snr-background-level-0: #fff;
         --x-snr-background-level-1: #eee;
         --x-snr-background-button: #eee;
@@ -334,7 +351,7 @@ function main() {
         --x-snr-border: #ccc;
     }
 
-    .x-color-scheme-sepia {
+    [data-color-scheme=sepia] {
         --x-snr-background-level-0: rgb(244, 236, 216);
         --x-snr-background-level-1: #eee;
         --x-snr-background-button: #eee;
@@ -358,7 +375,7 @@ function main() {
         --x-snr-border: var(--main-foreground);
     }
 
-    .x-color-scheme-dark {
+    [data-color-scheme=dark] {
         --x-snr-background-level-0: rgb(28, 27, 34);
         --x-snr-background-level-1: rgb(28, 27, 34);
         --x-snr-background-button: var(--x-snr-background-level-0);
@@ -383,7 +400,7 @@ function main() {
     }
 
     @media (prefers-color-scheme: light) {
-        .x-color-scheme-auto {
+        [data-color-scheme=auto] {
             --x-snr-background-level-0: #fff;
             --x-snr-background-level-1: #eee;
             --x-snr-background-button: #eee;
@@ -409,7 +426,7 @@ function main() {
     }
 
     @media (prefers-color-scheme: dark) {
-        .x-color-scheme-auto {
+        [data-color-scheme=auto] {
             --x-snr-background-level-0: rgb(28, 27, 34);
             --x-snr-background-level-1: rgb(28, 27, 34);
             --x-snr-background-button: var(--x-snr-background-level-0);
@@ -435,22 +452,28 @@ function main() {
     }
 </style>
 `;
+    GM_registerMenuCommand("切换阅读模式", toggle);
     SimpleNovelReader.querySelector("#myt-snr-exit").addEventListener("click", hide);
     SimpleNovelReader.querySelector("#myt-snr-prev").addEventListener("click", switchChapter);
     SimpleNovelReader.querySelector("#myt-snr-next").addEventListener("click", switchChapter);
-    /**
-     * @type {HTMLDivElement}
-     */
-    var snr = SimpleNovelReader.querySelector("#myt-snr-base");
     loadUrl(window.location.href);
     if (window.location.hash == "#simple-novel-reader") {
-        snr.style.top = "0";
+        SimpleNovelReader.style.top = "0";
         show();
     }
     window.addEventListener("hashchange", detectHashChange);
     document.body.appendChild(SimpleNovelReader);
 }
 
+const FontSizes = [
+    ["xx-small", "极小"],
+    ["x-small", "小"],
+    ["small", "较小"],
+    ["medium", "中"],
+    ["large", "较大"],
+    ["x-large", "大"],
+    ["xx-large", "极大"]
+]
 const SimpleNovelReader = document.createElement("div");
 const OriginalUrl = window.location.origin + window.location.pathname + window.location.search;
 main();

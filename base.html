@@ -1,15 +1,15 @@
-<div id="myt-snr-base" class="x-color-scheme-auto">
+<div id="myt-snr-main">
     <header id="myt-snr-header">
         <h1 id="myt-snr-title"></h1>
         <div id="myt-snr-tools">
             <button id="myt-snr-exit" class="x-myt-button">退出阅读模式</button>
             <button id="myt-snr-settings" class="x-myt-button" disabled>样式设置</button>
         </div>
-        <!-- WORK IN PROGRESS
+        <!-- WORK IN PROGRESS --
         <ul id="myt-snr-setting-items" hidden>
             <li>
                 <input id="myt-snr-setting-font-sans-serif" type="radio" name="font-type">
-                <label for="myt-snr-setting-font-sans-serif" checked="true">无衬线</label>
+                <label for="myt-snr-setting-font-sans-serif" checked>无衬线</label>
                 <input id="myt-snr-setting-font-radio-serif" type="radio" name="font-type">
                 <label for="myt-snr-setting-font-radio-serif">衬线</label>
             </li>
@@ -32,10 +32,10 @@
                 <button id="myt-snr-setting-line-space-inc" class="x-myt-button">+</button>
             </li>
             <li>
-                <button id="myt-snr-setting-color-light" class="x-myt-button x-color-scheme-light">浅色</button>
-                <button id="myt-snr-setting-color-dark" class="x-myt-button x-color-scheme-dark">深色</button>
-                <button id="myt-snr-setting-color-sepia" class="x-myt-button x-color-scheme-sepia">纸墨</button>
-                <button id="myt-snr-setting-color-auto" class="x-myt-button x-color-scheme-auto">自动</button>
+                <button id="myt-snr-setting-color-light" class="x-myt-button" data-color-scheme="light">浅色</button>
+                <button id="myt-snr-setting-color-dark" class="x-myt-button" data-color-scheme="dark">深色</button>
+                <button id="myt-snr-setting-color-sepia" class="x-myt-button" data-color-scheme="sepia">纸墨</button>
+                <button id="myt-snr-setting-color-auto" class="x-myt-button" data-color-scheme="auto">自动</button>
                 <button id="myt-snr-setting-style-custom" class="x-myt-button x-custom-style"
                     data-style-name="">自定义样式</button>
                 <input>
@@ -45,16 +45,18 @@
     </header>
     <nav id="myt-snr-nav">
         <button id="myt-snr-prev" class="x-myt-button x-left">上一章</button>
-        <button id="myt-snr-info" class="x-myt-button x-middle">章节列表</button>
+        <button id="myt-snr-info" class="x-myt-button x-middle" disabled>章节列表</button>
         <button id="myt-snr-next" class="x-myt-button x-right">下一章</button>
     </nav>
     <article id="myt-snr-content">
     </article>
+    <footer id="myt-snr-footer">
+    </footer>
 </div>
 <style id="myt-snr-custom-style">
 </style>
 <style>
-    #myt-snr-base {
+    #myt-snr-root {
         box-sizing: border-box;
         position: fixed;
         width: 100%;
@@ -63,36 +65,40 @@
         left: 0;
         overflow: scroll;
         background: var(--x-snr-background-level-0);
-    }
-
-    #myt-snr-base * {
         color: var(--x-snr-foreground-level-0);
         font-size: medium;
         font-family: sans-serif;
         line-height: revert;
     }
 
-    #myt-snr-base *::selection {
+    #myt-snr-root * {
+        color: inherit;
+        font-size: inherit;
+        font-family: inherit;
+        line-height: inherit;
+    }
+
+    #myt-snr-root *::selection {
         background: var(--x-snr-background-selected-text);
         color: var(--x-snr-foreground-selected-text);
     }
 
-    #myt-snr-base a {
+    #myt-snr-root a {
         background: var(--x-snr-background-link);
         color: var(--x-snr-foreground-link);
         text-decoration: underline var(--x-snr-foreground-level-0);
     }
 
-    #myt-snr-base a:visited {
+    #myt-snr-root a:visited {
         color: var(--x-snr-foreground-visited-link);
     }
 
-    #myt-snr-base a::selection {
+    #myt-snr-root a::selection {
         background: var(--x-snr-background-selected-link);
         color: var(--x-snr-foreground-selected-link);
     }
 
-    #myt-snr-base>* {
+    #myt-snr-main>* {
         padding: 1em;
     }
 
@@ -100,6 +106,10 @@
         text-align: center;
         max-width: 40rem;
         margin: auto;
+    }
+
+    #myt-snr-tools .x-myt-button {
+        margin-bottom: 0;
     }
 
     #myt-snr-nav {
@@ -119,12 +129,12 @@
         margin: auto;
     }
 
-    #myt-snr-base h1 {
+    #myt-snr-root h1 {
         margin: 0;
         font-size: revert;
     }
 
-    #myt-snr-base p {
+    #myt-snr-root p {
         text-indent: 2em;
         margin: revert;
         padding: revert;
@@ -160,7 +170,7 @@
         margin: auto;
     }
 
-    .x-color-scheme-light {
+    [data-color-scheme=light] {
         --x-snr-background-level-0: #fff;
         --x-snr-background-level-1: #eee;
         --x-snr-background-button: #eee;
@@ -184,7 +194,7 @@
         --x-snr-border: #ccc;
     }
 
-    .x-color-scheme-sepia {
+    [data-color-scheme=sepia] {
         --x-snr-background-level-0: rgb(244, 236, 216);
         --x-snr-background-level-1: #eee;
         --x-snr-background-button: #eee;
@@ -208,7 +218,7 @@
         --x-snr-border: var(--main-foreground);
     }
 
-    .x-color-scheme-dark {
+    [data-color-scheme=dark] {
         --x-snr-background-level-0: rgb(28, 27, 34);
         --x-snr-background-level-1: rgb(28, 27, 34);
         --x-snr-background-button: var(--x-snr-background-level-0);
@@ -233,7 +243,7 @@
     }
 
     @media (prefers-color-scheme: light) {
-        .x-color-scheme-auto {
+        [data-color-scheme=auto] {
             --x-snr-background-level-0: #fff;
             --x-snr-background-level-1: #eee;
             --x-snr-background-button: #eee;
@@ -259,7 +269,7 @@
     }
 
     @media (prefers-color-scheme: dark) {
-        .x-color-scheme-auto {
+        [data-color-scheme=auto] {
             --x-snr-background-level-0: rgb(28, 27, 34);
             --x-snr-background-level-1: rgb(28, 27, 34);
             --x-snr-background-button: var(--x-snr-background-level-0);
