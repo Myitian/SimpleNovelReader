@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.1.1
+// @version       0.1.2
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -97,7 +97,7 @@ function detectHashChange() {
     if (window.location.hash == "#simple-novel-reader") {
         snr.style.top = "0";
     } else {
-        snr.style.top = "100%";
+        snr.style.top = "200%";
     }
 }
 
@@ -209,7 +209,7 @@ function main() {
         position: fixed;
         width: 100%;
         height: 100%;
-        top: 100%;
+        top: 200%;
         left: 0;
         overflow: scroll;
         background: var(--x-snr-background-level-0);
