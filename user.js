@@ -94,7 +94,7 @@ function get(url, responseType = "document", timeout = 0) {
 
 function detectHashChange() {
     var snr = SimpleNovelReader.querySelector("#myt-snr-base");
-    if (window.location.hash == "#SimpleNovelReader") {
+    if (window.location.hash == "#simple-novel-reader") {
         snr.style.top = "0";
     } else {
         snr.style.top = "100%";
@@ -102,7 +102,7 @@ function detectHashChange() {
 }
 
 function toggle() {
-    if (window.location.hash == "#SimpleNovelReader") {
+    if (window.location.hash == "#simple-novel-reader") {
         hide();
     } else {
         show();
@@ -110,12 +110,12 @@ function toggle() {
 }
 
 function show(url = undefined) {
-    window.location.hash = "#SimpleNovelReader";
+    window.location.hash = "#simple-novel-reader";
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     if (url) {
         var newUrl = new URL(url);
-        newUrl.hash = "#SimpleNovelReader";
+        newUrl.hash = "#simple-novel-reader";
         history.pushState(null, "", newUrl.toString());
         loadUrl(url);
     }
@@ -384,26 +384,26 @@ function main() {
 
     @media (prefers-color-scheme: light) {
         .x-color-scheme-auto {
-            --x-snr-background-level-0: rgb(28, 27, 34);
-            --x-snr-background-level-1: rgb(28, 27, 34);
-            --x-snr-background-button: var(--x-snr-background-level-0);
-            --x-snr-background-button-hover: rgb(82, 82, 94);
-            --x-snr-background-button-active: rgb(91, 91, 102);
-            --x-snr-background-selected: rgba(0, 221, 255, 0.3);
+            --x-snr-background-level-0: #fff;
+            --x-snr-background-level-1: #eee;
+            --x-snr-background-button: #eee;
+            --x-snr-background-button-hover: #ddd;
+            --x-snr-background-button-active: #ccc;
+            --x-snr-background-selected: rgba(0, 97, 224, 0.3);
             --x-snr-background-selected-text: var(--x-snr-background-selected);
             --x-snr-background-selected-link: var(--x-snr-background-selected);
             --x-snr-background-link: inherit;
             --x-snr-background-visited-link: inherit;
-            --x-snr-foreground-level-0: rgb(251, 251, 254);
+            --x-snr-foreground-level-0: rgb(21, 20, 26);
             --x-snr-foreground-level-1: var(--x-snr-foreground-level-0);
             --x-snr-foreground-button: var(--x-snr-foreground-level-0);
             --x-snr-foreground-button-hover: var(--x-snr-foreground-level-0);
             --x-snr-foreground-button-active: var(--x-snr-foreground-link);
             --x-snr-foreground-selected-text: inherit;
-            --x-snr-foreground-selected-link: #fff;
-            --x-snr-foreground-link: rgb(0, 221, 255);
-            --x-snr-foreground-visited-link: #e675fd;
-            --x-snr-foreground-disabled: rgba(251, 251, 254, 0.4);
+            --x-snr-foreground-selected-link: #333;
+            --x-snr-foreground-link: rgb(0, 97, 224);
+            --x-snr-foreground-visited-link: #b5007f;
+            --x-snr-foreground-disabled: rgba(91, 91, 102, 0.4);
             --x-snr-border: #ccc;
         }
     }
@@ -443,7 +443,7 @@ function main() {
      */
     var snr = SimpleNovelReader.querySelector("#myt-snr-base");
     loadUrl(window.location.href);
-    if (window.location.hash == "#SimpleNovelReader") {
+    if (window.location.hash == "#simple-novel-reader") {
         snr.style.top = "0";
         show();
     }
