@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.2
+// @version       0.2.1
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -11,6 +11,9 @@
 // @match         *://*.52bqg.org/book_*/*.html
 // @match         *://*.bqg78.cc/book/*/*.html
 // @match         *://*.beqege.com/*/*.html
+// @grant         GM_getValue
+// @grant         GM_setValue
+// @grant         GM_deleteValue
 // @grant         GM_registerMenuCommand
 // ==/UserScript==
 
@@ -137,7 +140,21 @@ function hide() {
 }
 
 /**
- * 
+ * @param {Event} event 
+ */
+function toggleSettingDisplay(event) {
+    /**
+     * @type {HTMLDivElement}
+     */
+    var settings = document.querySelector("#myt-snr-setting-items");
+    if (settings.toggleAttribute("hidden")) {
+        document.querySelector("#myt-snr-settings").innerText = "展开样式设置";
+    } else {
+        document.querySelector("#myt-snr-settings").innerText = "收起样式设置";
+    }
+}
+
+/**
  * @param {Event} event 
  */
 function switchChapter(event) {
@@ -152,14 +169,21 @@ function switchChapter(event) {
 
 function main() {
     SimpleNovelReader.id = "myt-snr-root";
-    SimpleNovelReader.dataset.colorScheme = "auto"
+    SimpleNovelReader.dataset.colorScheme = "auto";
     SimpleNovelReader.innerHTML = `
 $$$$$replace$$$$$
 `;
     GM_registerMenuCommand("切换阅读模式", toggle);
     SimpleNovelReader.querySelector("#myt-snr-exit").addEventListener("click", hide);
+    SimpleNovelReader.querySelector("#myt-snr-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-prev").addEventListener("click", switchChapter);
     SimpleNovelReader.querySelector("#myt-snr-next").addEventListener("click", switchChapter);
+    SimpleNovelReader.setAttribute("style", `
+font-family: ${GM_getValue("#myt-snr.font-size", "sans-serif")};
+font-size: ${GM_getValue("#myt-snr.font-size", "medium")};
+line-height: ${GM_getValue("#myt-snr.font-size", "1.5")};
+--width-limit: ${GM_getValue("#myt-snr.font-size", "40rem")};
+`);
     loadUrl(window.location.href);
     if (window.location.hash == "#simple-novel-reader") {
         SimpleNovelReader.style.top = "0";
