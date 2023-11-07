@@ -6,7 +6,7 @@
             <button id="myt-snr-settings" class="x-myt-button">展开样式设置</button>
         </div>
         <div id="myt-snr-setting-items" class="x-scroll-container" hidden>
-            <div class="x-myt-list-item">
+            <div id="myt-snr-setting-font-family" class="x-myt-list-item">
                 <div id="myt-snr-close-settings">
                     <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 24 24">
                         <path stroke-linecap="round" d="M6 6l12 12m0-12L6 18" fill="none" stroke-width="1.5"></path>
@@ -26,9 +26,11 @@
                         <label for="myt-snr-setting-font-family-serif" class="x-myt-hidden-radio-button x-myt-button"
                             style="font-family: serif;">衬线体</label>
                     </span>
+                    <wbr>
                     <input id="myt-snr-setting-font-family-custom"
                         class="x-myt-hidden-radio x-myt-snr-setting-font-family" type="radio" data-value="custom"
                         name="font-family">
+                    <wbr>
                     <label for="myt-snr-setting-font-family-custom"
                         class="x-myt-hidden-radio-button x-myt-button">自定义</label>
                     <input id="myt-snr-setting-font-family-custom-name" type="text">
@@ -60,7 +62,7 @@
                     </div>
                 </div>
             </div>
-            <div class="x-myt-list-item">
+            <div id="myt-snr-setting-color-scheme" class="x-myt-list-item">
                 <div>
                     <span class="x-nobr">
                         <input id="myt-snr-setting-color-scheme-light"
@@ -74,6 +76,7 @@
                         <label for="myt-snr-setting-color-scheme-dark" data-color-scheme="dark"
                             class="x-myt-hidden-radio-button x-myt-button">深色</label>
                     </span>
+                    <wbr>
                     <span class="x-nobr">
                         <input id="myt-snr-setting-color-scheme-sepia"
                             class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="sepia"
@@ -86,6 +89,7 @@
                         <label for="myt-snr-setting-color-scheme-ex-dark" data-color-scheme="ex-dark"
                             class="x-myt-hidden-radio-button x-myt-button">极黑</label>
                     </span>
+                    <wbr>
                     <span class="x-nobr">
                         <input id="myt-snr-setting-color-scheme-sepia2"
                             class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="sepia2"
@@ -103,11 +107,14 @@
             <div class="x-myt-list-item">
                 <div>
                     <label for="myt-snr-setting-style-custom">自定义样式</label>
+                    <wbr>
                     <input id="myt-snr-setting-style-custom" type="text">
                 </div>
                 <div>
                     <button id="myt-snr-setting-style-custom-import" class="x-myt-button">导入</button>
+                    <wbr>
                     <button id="myt-snr-setting-style-custom-confirm" class="x-myt-button">应用</button>
+                    <wbr>
                     <button id="myt-snr-setting-style-custom-confirm" class="x-myt-button">停用</button>
                 </div>
             </div>
@@ -171,6 +178,9 @@
     #myt-snr-root input[type=text] {
         background: var(--x-snr-background-level-1);
         border: 2px solid var(--x-snr-border);
+        color: var(--x-snr-foreground-level-1);
+        padding: revert;
+        margin: .2em;
     }
 
     #myt-snr-root label {
@@ -231,13 +241,12 @@
         border-bottom: unset;
     }
 
-    #myt-snr-tools {
-        margin-top: 1em;
+    #myt-snr-header .x-myt-button {
+        margin: .2em;
     }
 
-    #myt-snr-tools .x-myt-button {
-        margin: 0;
-        margin-top: .2em;
+    #myt-snr-tools {
+        margin-top: 1em;
     }
 
     #myt-snr-setting-items {
@@ -253,12 +262,26 @@
         margin: 0;
     }
 
+    #myt-snr-setting-font-family-custom-name {
+        width: 8em;
+    }
+
+    #myt-snr-setting-style-custom {
+        width: 100%;
+    }
+
     #myt-snr-setting-items .x-myt-list-item {
         margin: .5em;
     }
 
-    #myt-snr-setting-items .x-myt-button {
-        margin: .2em;
+    #myt-snr-setting-font-family .x-myt-button {
+        width: 5em;
+        padding: .5em .1em;
+    }
+
+    #myt-snr-setting-color-scheme .x-myt-button {
+        width: 4em;
+        padding: .5em .1em;
     }
 
     .x-setting-short-item {

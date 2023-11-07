@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.3.1
+// @version       0.3.2
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -18,6 +18,7 @@
 // @grant         GM_getValue
 // @grant         GM_setValue
 // @grant         GM_deleteValue
+// @grant         GM_listValues
 // @grant         GM_registerMenuCommand
 // ==/UserScript==
 
@@ -192,6 +193,7 @@ function switchChapter(event) {
 
 function updateCustomFontButtonStyle() {
     SimpleNovelReader.querySelector("[for=myt-snr-setting-font-family-custom]").style.fontFamily = GM_getValue("config.font-family.custom", "sans-serif");
+    SimpleNovelReader.querySelector("#myt-snr-setting-font-family-custom-name").style.fontFamily = GM_getValue("config.font-family.custom", "sans-serif");
 }
 
 function updateContentStyle() {
@@ -302,6 +304,13 @@ function deleteData() {
     }
 }
 
+function debug_ListValues() {
+    const keys = GM_listValues();
+    for (var key of keys) {
+        console.log(`${key}\n${GM_getValue(key)}`);
+    }
+}
+
 function main() {
     SimpleNovelReader.id = "myt-snr-root";
     SimpleNovelReader.className = "x-scroll-container";
@@ -309,127 +318,134 @@ function main() {
 <div id="myt-snr-main">
     <header id="myt-snr-header" class="x-myt-content-style">
         <h1 id="myt-snr-title"></h1>
-        <div id="myt-snr-tools">
-            <button id="myt-snr-exit" class="x-myt-button">退出阅读模式</button>
-            <button id="myt-snr-settings" class="x-myt-button">展开样式设置</button>
-        </div>
+        <div id="myt-snr-tools"><!--
+         --><button id="myt-snr-exit" class="x-myt-button">退出阅读模式</button><!--
+         --><button id="myt-snr-settings" class="x-myt-button">展开样式设置</button><!--
+     --></div>
         <div id="myt-snr-setting-items" class="x-scroll-container" hidden>
-            <div class="x-myt-list-item">
+            <div id="myt-snr-setting-font-family" class="x-myt-list-item">
                 <div id="myt-snr-close-settings">
                     <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 24 24">
                         <path stroke-linecap="round" d="M6 6l12 12m0-12L6 18" fill="none" stroke-width="1.5"></path>
                     </svg>
                 </div>
                 <h6>字体</h6>
-                <div>
-                    <span class="x-nobr">
-                        <input id="myt-snr-setting-font-family-sans-serif"
+                <div><!--
+                 --><span class="x-nobr"><!--
+                     --><input id="myt-snr-setting-font-family-sans-serif"
                             class="x-myt-hidden-radio x-myt-snr-setting-font-family" type="radio"
-                            data-value="sans-serif" name="font-family">
-                        <label for="myt-snr-setting-font-family-sans-serif"
-                            class="x-myt-hidden-radio-button x-myt-button" style="font-family: sans-serif;">无衬线体</label>
-                        <input id="myt-snr-setting-font-family-serif"
+                            data-value="sans-serif" name="font-family"><!--
+                     --><label for="myt-snr-setting-font-family-sans-serif"
+                            class="x-myt-hidden-radio-button x-myt-button" style="font-family: sans-serif;">无衬线体</label><!--
+                     --><input id="myt-snr-setting-font-family-serif"
                             class="x-myt-hidden-radio x-myt-snr-setting-font-family" type="radio" data-value="serif"
-                            name="font-family">
-                        <label for="myt-snr-setting-font-family-serif" class="x-myt-hidden-radio-button x-myt-button"
-                            style="font-family: serif;">衬线体</label>
-                    </span>
-                    <input id="myt-snr-setting-font-family-custom"
+                            name="font-family"><!--
+                     --><label for="myt-snr-setting-font-family-serif" class="x-myt-hidden-radio-button x-myt-button"
+                            style="font-family: serif;">衬线体</label><!--
+                 --></span><!--
+                 --><wbr><!--
+                 --><input id="myt-snr-setting-font-family-custom"
                         class="x-myt-hidden-radio x-myt-snr-setting-font-family" type="radio" data-value="custom"
-                        name="font-family">
-                    <label for="myt-snr-setting-font-family-custom"
-                        class="x-myt-hidden-radio-button x-myt-button">自定义</label>
-                    <input id="myt-snr-setting-font-family-custom-name" type="text">
-                </div>
+                        name="font-family"><!--
+                 --><wbr><!--
+                 --><label for="myt-snr-setting-font-family-custom"
+                        class="x-myt-hidden-radio-button x-myt-button">自定义</label><!--
+                 --><input id="myt-snr-setting-font-family-custom-name" type="text"><!--
+             --></div>
             </div>
             <div class="x-myt-list-item">
                 <div class="x-setting-short-item">
                     <h6>字号</h6>
-                    <div>
-                        <button id="myt-snr-setting-font-familysize-minus" class="x-myt-button">-</button>
-                        <span id="myt-snr-setting-font-familysize-value" class="x-middle" data-v="3">中</span>
-                        <button id="myt-snr-setting-font-familysize-plus" class="x-myt-button">+</button>
-                    </div>
+                    <div><!--
+                     --><button id="myt-snr-setting-font-familysize-minus" class="x-myt-button">-</button><!--
+                     --><span id="myt-snr-setting-font-familysize-value" class="x-middle" data-v="3">中</span><!--
+                     --><button id="myt-snr-setting-font-familysize-plus" class="x-myt-button">+</button><!--
+                 --></div>
                 </div>
                 <div class="x-setting-short-item">
                     <h6>行间距</h6>
-                    <div>
-                        <button id="myt-snr-setting-line-space-minus" class="x-myt-button">-</button>
-                        <span id="myt-snr-setting-line-space-value" class="x-middle" data-v="1.5">1.5</span>
-                        <button id="myt-snr-setting-line-space-plus" class="x-myt-button">+</button>
-                    </div>
+                    <div><!--
+                     --><button id="myt-snr-setting-line-space-minus" class="x-myt-button">-</button><!--
+                     --><span id="myt-snr-setting-line-space-value" class="x-middle" data-v="1.5">1.5</span><!--
+                     --><button id="myt-snr-setting-line-space-plus" class="x-myt-button">+</button><!--
+                 --></div>
                 </div>
                 <div class="x-setting-short-item">
                     <h6>最大内容宽度</h6>
-                    <div>
-                        <button id="myt-snr-setting-max-width-minus" class="x-myt-button">-</button>
-                        <span id="myt-snr-setting-max-width-value" class="x-middle" data-v="40">40em</span>
-                        <button id="myt-snr-setting-max-width-plus" class="x-myt-button">+</button>
-                    </div>
+                    <div><!--
+                     --><button id="myt-snr-setting-max-width-minus" class="x-myt-button">-</button><!--
+                     --><span id="myt-snr-setting-max-width-value" class="x-middle" data-v="40">40em</span><!--
+                     --><button id="myt-snr-setting-max-width-plus" class="x-myt-button">+</button><!--
+                 --></div>
                 </div>
             </div>
-            <div class="x-myt-list-item">
-                <div>
-                    <span class="x-nobr">
-                        <input id="myt-snr-setting-color-scheme-light"
+            <div id="myt-snr-setting-color-scheme" class="x-myt-list-item">
+                <div><!--
+                 --><span class="x-nobr"><!--
+                     --><input id="myt-snr-setting-color-scheme-light"
                             class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="light"
-                            name="color-scheme">
-                        <label for="myt-snr-setting-color-scheme-light" data-color-scheme="light"
-                            class="x-myt-hidden-radio-button x-myt-button">浅色</label>
-                        <input id="myt-snr-setting-color-scheme-dark"
+                            name="color-scheme"><!--
+                     --><label for="myt-snr-setting-color-scheme-light" data-color-scheme="light"
+                            class="x-myt-hidden-radio-button x-myt-button">浅色</label><!--
+                     --><input id="myt-snr-setting-color-scheme-dark"
                             class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="dark"
-                            name="color-scheme">
-                        <label for="myt-snr-setting-color-scheme-dark" data-color-scheme="dark"
-                            class="x-myt-hidden-radio-button x-myt-button">深色</label>
-                    </span>
-                    <span class="x-nobr">
-                        <input id="myt-snr-setting-color-scheme-sepia"
+                            name="color-scheme"><!--
+                     --><label for="myt-snr-setting-color-scheme-dark" data-color-scheme="dark"
+                            class="x-myt-hidden-radio-button x-myt-button">深色</label><!--
+                 --></span><!--
+                 --><wbr><!--
+                 --><span class="x-nobr"><!--
+                     --><input id="myt-snr-setting-color-scheme-sepia"
                             class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="sepia"
-                            name="color-scheme">
-                        <label for="myt-snr-setting-color-scheme-sepia" data-color-scheme="sepia"
-                            class="x-myt-hidden-radio-button x-myt-button">纸墨</label>
-                        <input id="myt-snr-setting-color-scheme-ex-dark"
+                            name="color-scheme"><!--
+                     --><label for="myt-snr-setting-color-scheme-sepia" data-color-scheme="sepia"
+                            class="x-myt-hidden-radio-button x-myt-button">纸墨</label><!--
+                     --><input id="myt-snr-setting-color-scheme-ex-dark"
                             class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="ex-dark"
-                            name="color-scheme">
-                        <label for="myt-snr-setting-color-scheme-ex-dark" data-color-scheme="ex-dark"
-                            class="x-myt-hidden-radio-button x-myt-button">极黑</label>
-                    </span>
-                    <span class="x-nobr">
-                        <input id="myt-snr-setting-color-scheme-sepia2"
+                            name="color-scheme"><!--
+                     --><label for="myt-snr-setting-color-scheme-ex-dark" data-color-scheme="ex-dark"
+                            class="x-myt-hidden-radio-button x-myt-button">极黑</label><!--
+                 --></span><!--
+                 --><wbr><!--
+                 --><span class="x-nobr"><!--
+                     --><input id="myt-snr-setting-color-scheme-sepia2"
                             class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="sepia2"
-                            name="color-scheme">
-                        <label for="myt-snr-setting-color-scheme-sepia2" data-color-scheme="sepia2"
-                            class="x-myt-hidden-radio-button x-myt-button">纸墨2</label>
-                        <input id="myt-snr-setting-color-scheme-auto"
+                            name="color-scheme"><!--
+                     --><label for="myt-snr-setting-color-scheme-sepia2" data-color-scheme="sepia2"
+                            class="x-myt-hidden-radio-button x-myt-button">纸墨2</label><!--
+                     --><input id="myt-snr-setting-color-scheme-auto"
                             class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="auto"
-                            name="color-scheme">
-                        <label for="myt-snr-setting-color-scheme-auto" class="x-myt-hidden-radio-button x-myt-button"
-                            data-color-scheme="auto">自动</label>
-                    </span>
-                </div>
+                            name="color-scheme"><!--
+                     --><label for="myt-snr-setting-color-scheme-auto" class="x-myt-hidden-radio-button x-myt-button"
+                            data-color-scheme="auto">自动</label><!--
+                 --></span><!--
+             --></div>
             </div>
             <div class="x-myt-list-item">
-                <div>
-                    <label for="myt-snr-setting-style-custom">自定义样式</label>
-                    <input id="myt-snr-setting-style-custom" type="text">
-                </div>
-                <div>
-                    <button id="myt-snr-setting-style-custom-import" class="x-myt-button">导入</button>
-                    <button id="myt-snr-setting-style-custom-confirm" class="x-myt-button">应用</button>
-                    <button id="myt-snr-setting-style-custom-confirm" class="x-myt-button">停用</button>
-                </div>
+                <div><!--
+                 --><label for="myt-snr-setting-style-custom">自定义样式</label><!--
+                 --><wbr><!--
+                 --><input id="myt-snr-setting-style-custom" type="text"><!--
+             --></div>
+                <div><!--
+                 --><button id="myt-snr-setting-style-custom-import" class="x-myt-button">导入</button><!--
+                 --><wbr><!--
+                 --><button id="myt-snr-setting-style-custom-confirm" class="x-myt-button">应用</button><!--
+                 --><wbr><!--
+                 --><button id="myt-snr-setting-style-custom-confirm" class="x-myt-button">停用</button><!--
+             --></div>
             </div>
         </div>
     </header>
-    <nav id="myt-snr-nav">
-        <button id="myt-snr-prev" class="x-myt-button x-left">上一章</button>
-        <button id="myt-snr-info" class="x-myt-button x-middle" disabled><span class="x-nobr">章节</span><span
-                class="x-nobr">列表</span></button>
-        <button id="myt-snr-next" class="x-myt-button x-right">下一章</button>
-    </nav>
-    <article id="myt-snr-content" class="x-myt-content-style">
-    </article>
-    <footer id="myt-snr-footer" class="x-myt-content-style">
+    <nav id="myt-snr-nav"><!--
+     --><button id="myt-snr-prev" class="x-myt-button x-left">上一章</button><!--
+     --><button id="myt-snr-info" class="x-myt-button x-middle" disabled><span class="x-nobr">章节</span><span
+                class="x-nobr">列表</span></button><!--
+     --><button id="myt-snr-next" class="x-myt-button x-right">下一章</button><!--
+ --></nav><!--
+ --><article id="myt-snr-content" class="x-myt-content-style"><!--
+ --></article><!--
+ --><footer id="myt-snr-footer" class="x-myt-content-style">
     </footer>
 </div>
 <style>
@@ -479,6 +495,9 @@ function main() {
     #myt-snr-root input[type=text] {
         background: var(--x-snr-background-level-1);
         border: 2px solid var(--x-snr-border);
+        color: var(--x-snr-foreground-level-1);
+        padding: revert;
+        margin: .2em;
     }
 
     #myt-snr-root label {
@@ -539,13 +558,12 @@ function main() {
         border-bottom: unset;
     }
 
-    #myt-snr-tools {
-        margin-top: 1em;
+    #myt-snr-header .x-myt-button {
+        margin: .2em;
     }
 
-    #myt-snr-tools .x-myt-button {
-        margin: 0;
-        margin-top: .2em;
+    #myt-snr-tools {
+        margin-top: 1em;
     }
 
     #myt-snr-setting-items {
@@ -561,12 +579,26 @@ function main() {
         margin: 0;
     }
 
+    #myt-snr-setting-font-family-custom-name {
+        width: 8em;
+    }
+
+    #myt-snr-setting-style-custom {
+        width: 100%;
+    }
+
     #myt-snr-setting-items .x-myt-list-item {
         margin: .5em;
     }
 
-    #myt-snr-setting-items .x-myt-button {
-        margin: .2em;
+    #myt-snr-setting-font-family .x-myt-button {
+        width: 5em;
+        padding: .5em .1em;
+    }
+
+    #myt-snr-setting-color-scheme .x-myt-button {
+        width: 4em;
+        padding: .5em .1em;
     }
 
     .x-setting-short-item {
@@ -856,6 +888,7 @@ function main() {
 <style id="myt-snr-custom-style">
 </style>
 `;
+    unsafeWindow.SNRDebug_ListValues = debug_ListValues;
     GM_registerMenuCommand("切换阅读模式", toggle);
     GM_registerMenuCommand("删除样式数据", deleteData);
     SimpleNovelReader.querySelector("#myt-snr-exit").addEventListener("click", hide);

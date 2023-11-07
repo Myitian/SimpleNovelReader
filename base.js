@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.3.1
+// @version       0.3.2
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -18,6 +18,7 @@
 // @grant         GM_getValue
 // @grant         GM_setValue
 // @grant         GM_deleteValue
+// @grant         GM_listValues
 // @grant         GM_registerMenuCommand
 // ==/UserScript==
 
@@ -192,6 +193,7 @@ function switchChapter(event) {
 
 function updateCustomFontButtonStyle() {
     SimpleNovelReader.querySelector("[for=myt-snr-setting-font-family-custom]").style.fontFamily = GM_getValue("config.font-family.custom", "sans-serif");
+    SimpleNovelReader.querySelector("#myt-snr-setting-font-family-custom-name").style.fontFamily = GM_getValue("config.font-family.custom", "sans-serif");
 }
 
 function updateContentStyle() {
@@ -302,12 +304,20 @@ function deleteData() {
     }
 }
 
+function debug_ListValues() {
+    const keys = GM_listValues();
+    for (var key of keys) {
+        console.log(`${key}\n${GM_getValue(key)}`);
+    }
+}
+
 function main() {
     SimpleNovelReader.id = "myt-snr-root";
     SimpleNovelReader.className = "x-scroll-container";
     SimpleNovelReader.innerHTML = `
 $$$$$replace$$$$$
 `;
+    unsafeWindow.SNRDebug_ListValues = debug_ListValues;
     GM_registerMenuCommand("切换阅读模式", toggle);
     GM_registerMenuCommand("删除样式数据", deleteData);
     SimpleNovelReader.querySelector("#myt-snr-exit").addEventListener("click", hide);

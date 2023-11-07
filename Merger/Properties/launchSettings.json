@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Merger": {
+      "commandName": "Project",
+      "commandLineArgs": "$(SolutionDir)..\\"
+    }
+  }
+}
