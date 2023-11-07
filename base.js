@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.3.2
+// @version       0.4
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -70,6 +70,7 @@ function extractPageData(doc) {
         next: next?.includes(".html") ? next.trim() : ""
     }
 }
+
 /**
  * @param {{pageTitle:string,title:string,content:string,prev:string,info:string,next:string}} data
  */
@@ -163,10 +164,7 @@ function hide() {
     }
 }
 
-/**
- * @param {Event} event
- */
-function toggleSettingDisplay(event) {
+function toggleSettingDisplay() {
     /**
      * @type {HTMLDivElement}
      */
@@ -197,15 +195,21 @@ function updateCustomFontButtonStyle() {
 }
 
 function updateContentStyle() {
+    var fontSizeStr = FontSizes[GM_getValue("config.font-size", 3)];
+    var lineHeightStr = GM_getValue("config.line-height", 1.5).toFixed(1);
+    var maxWidthStr = GM_getValue("config.max-width", 40) + "em";
+    SimpleNovelReader.querySelector("#myt-snr-setting-font-size-value").innerText = fontSizeStr[1];
+    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-value").innerText = lineHeightStr;
+    SimpleNovelReader.querySelector("#myt-snr-setting-max-width-value").innerText = maxWidthStr;
     SimpleNovelReader.querySelector("#myt-snr-content-style").innerHTML = `
 #myt-snr-root .x-myt-content-style {
     font-family: ${GM_getValue("config.font-family.name", "sans-serif")};
-    font-size: ${GM_getValue("config.font-size", "medium")};
-    line-height: ${GM_getValue("config.line-height", "1.5")};
+    font-size: ${fontSizeStr[0]};
+    line-height: ${lineHeightStr};
 }
 
 #myt-snr-root {
-    --width-limit: ${GM_getValue("config.width-limit", "40em")};
+    --x-max-width: ${maxWidthStr};
 }
 `;
 }
@@ -221,6 +225,10 @@ function updateCustomStyle(useCustomStyle) {
     }
 }
 
+/**
+ * @param {string} name
+ * @param {string} value 
+ */
 function updateRadioButtonGroup(name, value) {
     /**
      * @type {HTMLInputElement}
@@ -263,6 +271,7 @@ function updateFontFamilyByRadio(event) {
     updateCustomFontButtonStyle();
     updateContentStyle();
 }
+
 /**
  * @param {Event} event
  */
@@ -277,6 +286,78 @@ function updateFontFamilyByInput(event) {
     }
     GM_setValue("config.font-family.custom", input.value);
     updateCustomFontButtonStyle();
+}
+
+/**
+ * @param {number} diff 
+ */
+function updateFontSize(diff) {
+    const min = 0;
+    const max = FontSizes.length - 1;
+    var oldVal = GM_getValue("config.font-size", 3) + diff;
+    var newVal = oldVal;
+    if (oldVal <= min) {
+        newVal = min;
+        document.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", false);
+    }
+    if (oldVal >= max) {
+        newVal = max;
+        document.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", false);
+    }
+    GM_setValue("config.font-size", newVal);
+    updateContentStyle();
+}
+
+/**
+ * @param {number} diff 
+ */
+function updateLineSpace(diff) {
+    const min = .5;
+    const max = 5;
+    var oldVal = GM_getValue("config.line-height", 1.5) + diff;
+    var newVal = oldVal;
+    if (oldVal <= min) {
+        newVal = min;
+        document.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", false);
+    }
+    if (oldVal >= max) {
+        newVal = max;
+        document.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", false);
+    }
+    GM_setValue("config.line-height", parseFloat(newVal.toFixed(1)));
+    updateContentStyle();
+}
+
+/**
+ * @param {number} diff 
+ */
+function updateMaxWidth(diff) {
+    const min = 5;
+    const max = 10000;
+    var oldVal = GM_getValue("config.max-width", 40) + diff;
+    var newVal = oldVal;
+    if (oldVal <= min) {
+        newVal = min;
+        document.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", false);
+    }
+    if (oldVal >= max) {
+        newVal = max;
+        document.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", false);
+    }
+    GM_setValue("config.max-width", newVal);
+    updateContentStyle();
 }
 
 /**
@@ -298,12 +379,15 @@ function deleteData() {
         GM_deleteValue("config.font-family.custom");
         GM_deleteValue("config.font-size");
         GM_deleteValue("config.line-height");
-        GM_deleteValue("config.width-limit");
+        GM_deleteValue("config.max-width");
         GM_deleteValue("config.custom-style");
         GM_deleteValue("config.color-scheme");
     }
 }
 
+function debug_DeleteValue(key) {
+    GM_deleteValue(key);
+}
 function debug_ListValues() {
     const keys = GM_listValues();
     for (var key of keys) {
@@ -317,6 +401,7 @@ function main() {
     SimpleNovelReader.innerHTML = `
 $$$$$replace$$$$$
 `;
+    unsafeWindow.SNRDebug_DeleteValue = debug_DeleteValue;
     unsafeWindow.SNRDebug_ListValues = debug_ListValues;
     GM_registerMenuCommand("切换阅读模式", toggle);
     GM_registerMenuCommand("删除样式数据", deleteData);
@@ -325,6 +410,14 @@ $$$$$replace$$$$$
     SimpleNovelReader.querySelector("#myt-snr-close-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-prev").addEventListener("click", switchChapter);
     SimpleNovelReader.querySelector("#myt-snr-next").addEventListener("click", switchChapter);
+
+    SimpleNovelReader.querySelector("#myt-snr-setting-font-size-minus").addEventListener("click", () => updateFontSize(-1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-font-size-plus").addEventListener("click", () => updateFontSize(1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-minus").addEventListener("click", () => updateLineSpace(-.1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-plus").addEventListener("click", () => updateLineSpace(.1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-max-width-minus").addEventListener("click", () => updateMaxWidth(-1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-max-width-plus").addEventListener("click", () => updateMaxWidth(1));
+
     for (var btn of SimpleNovelReader.querySelectorAll(".x-myt-hidden-radio")) {
         btn.addEventListener("change", updateRadioButton);
     }

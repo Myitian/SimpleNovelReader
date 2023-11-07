@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.3.2
+// @version       0.4
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -70,6 +70,7 @@ function extractPageData(doc) {
         next: next?.includes(".html") ? next.trim() : ""
     }
 }
+
 /**
  * @param {{pageTitle:string,title:string,content:string,prev:string,info:string,next:string}} data
  */
@@ -163,10 +164,7 @@ function hide() {
     }
 }
 
-/**
- * @param {Event} event
- */
-function toggleSettingDisplay(event) {
+function toggleSettingDisplay() {
     /**
      * @type {HTMLDivElement}
      */
@@ -197,15 +195,21 @@ function updateCustomFontButtonStyle() {
 }
 
 function updateContentStyle() {
+    var fontSizeStr = FontSizes[GM_getValue("config.font-size", 3)];
+    var lineHeightStr = GM_getValue("config.line-height", 1.5).toFixed(1);
+    var maxWidthStr = GM_getValue("config.max-width", 40) + "em";
+    SimpleNovelReader.querySelector("#myt-snr-setting-font-size-value").innerText = fontSizeStr[1];
+    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-value").innerText = lineHeightStr;
+    SimpleNovelReader.querySelector("#myt-snr-setting-max-width-value").innerText = maxWidthStr;
     SimpleNovelReader.querySelector("#myt-snr-content-style").innerHTML = `
 #myt-snr-root .x-myt-content-style {
     font-family: ${GM_getValue("config.font-family.name", "sans-serif")};
-    font-size: ${GM_getValue("config.font-size", "medium")};
-    line-height: ${GM_getValue("config.line-height", "1.5")};
+    font-size: ${fontSizeStr[0]};
+    line-height: ${lineHeightStr};
 }
 
 #myt-snr-root {
-    --width-limit: ${GM_getValue("config.width-limit", "40em")};
+    --x-max-width: ${maxWidthStr};
 }
 `;
 }
@@ -221,6 +225,10 @@ function updateCustomStyle(useCustomStyle) {
     }
 }
 
+/**
+ * @param {string} name
+ * @param {string} value 
+ */
 function updateRadioButtonGroup(name, value) {
     /**
      * @type {HTMLInputElement}
@@ -263,6 +271,7 @@ function updateFontFamilyByRadio(event) {
     updateCustomFontButtonStyle();
     updateContentStyle();
 }
+
 /**
  * @param {Event} event
  */
@@ -277,6 +286,78 @@ function updateFontFamilyByInput(event) {
     }
     GM_setValue("config.font-family.custom", input.value);
     updateCustomFontButtonStyle();
+}
+
+/**
+ * @param {number} diff 
+ */
+function updateFontSize(diff) {
+    const min = 0;
+    const max = FontSizes.length - 1;
+    var oldVal = GM_getValue("config.font-size", 3) + diff;
+    var newVal = oldVal;
+    if (oldVal <= min) {
+        newVal = min;
+        document.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", false);
+    }
+    if (oldVal >= max) {
+        newVal = max;
+        document.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", false);
+    }
+    GM_setValue("config.font-size", newVal);
+    updateContentStyle();
+}
+
+/**
+ * @param {number} diff 
+ */
+function updateLineSpace(diff) {
+    const min = .5;
+    const max = 5;
+    var oldVal = GM_getValue("config.line-height", 1.5) + diff;
+    var newVal = oldVal;
+    if (oldVal <= min) {
+        newVal = min;
+        document.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", false);
+    }
+    if (oldVal >= max) {
+        newVal = max;
+        document.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", false);
+    }
+    GM_setValue("config.line-height", parseFloat(newVal.toFixed(1)));
+    updateContentStyle();
+}
+
+/**
+ * @param {number} diff 
+ */
+function updateMaxWidth(diff) {
+    const min = 5;
+    const max = 10000;
+    var oldVal = GM_getValue("config.max-width", 40) + diff;
+    var newVal = oldVal;
+    if (oldVal <= min) {
+        newVal = min;
+        document.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", false);
+    }
+    if (oldVal >= max) {
+        newVal = max;
+        document.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", true);
+    } else {
+        document.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", false);
+    }
+    GM_setValue("config.max-width", newVal);
+    updateContentStyle();
 }
 
 /**
@@ -298,12 +379,15 @@ function deleteData() {
         GM_deleteValue("config.font-family.custom");
         GM_deleteValue("config.font-size");
         GM_deleteValue("config.line-height");
-        GM_deleteValue("config.width-limit");
+        GM_deleteValue("config.max-width");
         GM_deleteValue("config.custom-style");
         GM_deleteValue("config.color-scheme");
     }
 }
 
+function debug_DeleteValue(key) {
+    GM_deleteValue(key);
+}
 function debug_ListValues() {
     const keys = GM_listValues();
     for (var key of keys) {
@@ -357,24 +441,24 @@ function main() {
                 <div class="x-setting-short-item">
                     <h6>字号</h6>
                     <div><!--
-                     --><button id="myt-snr-setting-font-familysize-minus" class="x-myt-button">-</button><!--
-                     --><span id="myt-snr-setting-font-familysize-value" class="x-middle" data-v="3">中</span><!--
-                     --><button id="myt-snr-setting-font-familysize-plus" class="x-myt-button">+</button><!--
+                     --><button id="myt-snr-setting-font-size-minus" class="x-myt-button">-</button><!--
+                     --><span id="myt-snr-setting-font-size-value" class="x-middle">中</span><!--
+                     --><button id="myt-snr-setting-font-size-plus" class="x-myt-button">+</button><!--
                  --></div>
                 </div>
                 <div class="x-setting-short-item">
                     <h6>行间距</h6>
                     <div><!--
-                     --><button id="myt-snr-setting-line-space-minus" class="x-myt-button">-</button><!--
-                     --><span id="myt-snr-setting-line-space-value" class="x-middle" data-v="1.5">1.5</span><!--
-                     --><button id="myt-snr-setting-line-space-plus" class="x-myt-button">+</button><!--
+                     --><button id="myt-snr-setting-line-height-minus" class="x-myt-button">-</button><!--
+                     --><span id="myt-snr-setting-line-height-value" class="x-middle">1.5</span><!--
+                     --><button id="myt-snr-setting-line-height-plus" class="x-myt-button">+</button><!--
                  --></div>
                 </div>
                 <div class="x-setting-short-item">
                     <h6>最大内容宽度</h6>
                     <div><!--
                      --><button id="myt-snr-setting-max-width-minus" class="x-myt-button">-</button><!--
-                     --><span id="myt-snr-setting-max-width-value" class="x-middle" data-v="40">40em</span><!--
+                     --><span id="myt-snr-setting-max-width-value" class="x-middle">40em</span><!--
                      --><button id="myt-snr-setting-max-width-plus" class="x-myt-button">+</button><!--
                  --></div>
                 </div>
@@ -437,7 +521,7 @@ function main() {
             </div>
         </div>
     </header>
-    <nav id="myt-snr-nav"><!--
+    <nav id="myt-snr-nav" class="x-myt-content-style"><!--
      --><button id="myt-snr-prev" class="x-myt-button x-left">上一章</button><!--
      --><button id="myt-snr-info" class="x-myt-button x-middle" disabled><span class="x-nobr">章节</span><span
                 class="x-nobr">列表</span></button><!--
@@ -462,7 +546,7 @@ function main() {
         font-family: sans-serif;
         font-size: medium;
         line-height: 1.5;
-        --width-limit: 40em;
+        --x-max-width: 40em;
     }
 
     #myt-snr-content * {
@@ -549,7 +633,7 @@ function main() {
 
     #myt-snr-header {
         text-align: center;
-        max-width: var(--width-limit);
+        max-width: var(--x-max-width);
         margin: auto;
         padding: 1em;
         height: unset;
@@ -678,7 +762,7 @@ function main() {
 
     #myt-snr-content {
         padding: 1em;
-        max-width: var(--width-limit);
+        max-width: var(--x-max-width);
         margin: auto;
     }
 
@@ -888,6 +972,7 @@ function main() {
 <style id="myt-snr-custom-style">
 </style>
 `;
+    unsafeWindow.SNRDebug_DeleteValue = debug_DeleteValue;
     unsafeWindow.SNRDebug_ListValues = debug_ListValues;
     GM_registerMenuCommand("切换阅读模式", toggle);
     GM_registerMenuCommand("删除样式数据", deleteData);
@@ -896,6 +981,14 @@ function main() {
     SimpleNovelReader.querySelector("#myt-snr-close-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-prev").addEventListener("click", switchChapter);
     SimpleNovelReader.querySelector("#myt-snr-next").addEventListener("click", switchChapter);
+
+    SimpleNovelReader.querySelector("#myt-snr-setting-font-size-minus").addEventListener("click", () => updateFontSize(-1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-font-size-plus").addEventListener("click", () => updateFontSize(1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-minus").addEventListener("click", () => updateLineSpace(-.1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-plus").addEventListener("click", () => updateLineSpace(.1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-max-width-minus").addEventListener("click", () => updateMaxWidth(-1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-max-width-plus").addEventListener("click", () => updateMaxWidth(1));
+
     for (var btn of SimpleNovelReader.querySelectorAll(".x-myt-hidden-radio")) {
         btn.addEventListener("change", updateRadioButton);
     }

@@ -40,24 +40,24 @@
                 <div class="x-setting-short-item">
                     <h6>字号</h6>
                     <div>
-                        <button id="myt-snr-setting-font-familysize-minus" class="x-myt-button">-</button>
-                        <span id="myt-snr-setting-font-familysize-value" class="x-middle" data-v="3">中</span>
-                        <button id="myt-snr-setting-font-familysize-plus" class="x-myt-button">+</button>
+                        <button id="myt-snr-setting-font-size-minus" class="x-myt-button">-</button>
+                        <span id="myt-snr-setting-font-size-value" class="x-middle">中</span>
+                        <button id="myt-snr-setting-font-size-plus" class="x-myt-button">+</button>
                     </div>
                 </div>
                 <div class="x-setting-short-item">
                     <h6>行间距</h6>
                     <div>
-                        <button id="myt-snr-setting-line-space-minus" class="x-myt-button">-</button>
-                        <span id="myt-snr-setting-line-space-value" class="x-middle" data-v="1.5">1.5</span>
-                        <button id="myt-snr-setting-line-space-plus" class="x-myt-button">+</button>
+                        <button id="myt-snr-setting-line-height-minus" class="x-myt-button">-</button>
+                        <span id="myt-snr-setting-line-height-value" class="x-middle">1.5</span>
+                        <button id="myt-snr-setting-line-height-plus" class="x-myt-button">+</button>
                     </div>
                 </div>
                 <div class="x-setting-short-item">
                     <h6>最大内容宽度</h6>
                     <div>
                         <button id="myt-snr-setting-max-width-minus" class="x-myt-button">-</button>
-                        <span id="myt-snr-setting-max-width-value" class="x-middle" data-v="40">40em</span>
+                        <span id="myt-snr-setting-max-width-value" class="x-middle">40em</span>
                         <button id="myt-snr-setting-max-width-plus" class="x-myt-button">+</button>
                     </div>
                 </div>
@@ -120,7 +120,7 @@
             </div>
         </div>
     </header>
-    <nav id="myt-snr-nav">
+    <nav id="myt-snr-nav" class="x-myt-content-style">
         <button id="myt-snr-prev" class="x-myt-button x-left">上一章</button>
         <button id="myt-snr-info" class="x-myt-button x-middle" disabled><span class="x-nobr">章节</span><span
                 class="x-nobr">列表</span></button>
@@ -145,7 +145,7 @@
         font-family: sans-serif;
         font-size: medium;
         line-height: 1.5;
-        --width-limit: 40em;
+        --x-max-width: 40em;
     }
 
     #myt-snr-content * {
@@ -232,7 +232,7 @@
 
     #myt-snr-header {
         text-align: center;
-        max-width: var(--width-limit);
+        max-width: var(--x-max-width);
         margin: auto;
         padding: 1em;
         height: unset;
@@ -361,7 +361,7 @@
 
     #myt-snr-content {
         padding: 1em;
-        max-width: var(--width-limit);
+        max-width: var(--x-max-width);
         margin: auto;
     }
 
