@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.4
+// @version       0.5
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -68,7 +68,7 @@ function extractPageData(doc) {
         prev: prev?.includes(".html") ? prev.trim() : "",
         info: info?.trim() ?? "",
         next: next?.includes(".html") ? next.trim() : ""
-    }
+    };
 }
 
 /**
@@ -168,11 +168,11 @@ function toggleSettingDisplay() {
     /**
      * @type {HTMLDivElement}
      */
-    var settings = document.querySelector("#myt-snr-setting-items");
+    var settings = SimpleNovelReader.querySelector("#myt-snr-setting-items");
     if (settings.toggleAttribute("hidden")) {
-        document.querySelector("#myt-snr-settings").innerText = "展开样式设置";
+        SimpleNovelReader.querySelector("#myt-snr-settings").innerText = "展开样式设置";
     } else {
-        document.querySelector("#myt-snr-settings").innerText = "收起样式设置";
+        SimpleNovelReader.querySelector("#myt-snr-settings").innerText = "收起样式设置";
     }
 }
 
@@ -217,8 +217,8 @@ function updateContentStyle() {
 /**
  * @param {boolean} useCustomStyle
  */
-function updateCustomStyle(useCustomStyle) {
-    if (useCustomStyle) {
+function updateCustomStyle() {
+    if (GM_getValue("config.custom-style.enabled", false)) {
         SimpleNovelReader.querySelector("#myt-snr-custom-style").innerHTML = GM_getValue("config.custom-style", "");
     } else {
         SimpleNovelReader.querySelector("#myt-snr-custom-style").innerHTML = "";
@@ -298,15 +298,15 @@ function updateFontSize(diff) {
     var newVal = oldVal;
     if (oldVal <= min) {
         newVal = min;
-        document.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", false);
     }
     if (oldVal >= max) {
         newVal = max;
-        document.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", false);
     }
     GM_setValue("config.font-size", newVal);
     updateContentStyle();
@@ -316,21 +316,21 @@ function updateFontSize(diff) {
  * @param {number} diff 
  */
 function updateLineSpace(diff) {
-    const min = .5;
+    const min = 0.5;
     const max = 5;
     var oldVal = GM_getValue("config.line-height", 1.5) + diff;
     var newVal = oldVal;
     if (oldVal <= min) {
         newVal = min;
-        document.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", false);
     }
     if (oldVal >= max) {
         newVal = max;
-        document.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", false);
     }
     GM_setValue("config.line-height", parseFloat(newVal.toFixed(1)));
     updateContentStyle();
@@ -346,15 +346,15 @@ function updateMaxWidth(diff) {
     var newVal = oldVal;
     if (oldVal <= min) {
         newVal = min;
-        document.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", false);
     }
     if (oldVal >= max) {
         newVal = max;
-        document.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", false);
     }
     GM_setValue("config.max-width", newVal);
     updateContentStyle();
@@ -372,6 +372,33 @@ function updateColorScheme(event) {
     SimpleNovelReader.dataset.colorScheme = radio.dataset.value;
 }
 
+/**
+ * @param {Event} event
+ */
+function importCustomStyle(event) {
+    /**
+     * @type {HTMLInputElement}
+     */
+    var input = event.target;
+    input.files[0].text().then(
+        s => {
+            SimpleNovelReader.querySelector("#myt-snr-setting-custom-style").value = s;
+            GM_setValue("config.custom-style", s);
+        }
+    );
+}
+
+function applyCustomStyle() {
+    GM_setValue("config.custom-style", SimpleNovelReader.querySelector("#myt-snr-setting-custom-style").value);
+    GM_setValue("config.custom-style.enabled", true);
+    updateCustomStyle();
+}
+
+function disableCustomStyle() {
+    GM_setValue("config.custom-style.enabled", false);
+    updateCustomStyle();
+}
+
 function deleteData() {
     if (confirm("确认删除储存的样式数据？")) {
         GM_deleteValue("config.font-family");
@@ -380,14 +407,16 @@ function deleteData() {
         GM_deleteValue("config.font-size");
         GM_deleteValue("config.line-height");
         GM_deleteValue("config.max-width");
-        GM_deleteValue("config.custom-style");
         GM_deleteValue("config.color-scheme");
+        GM_deleteValue("config.custom-style");
+        GM_deleteValue("config.custom-style.enabled");
     }
 }
 
 function debug_DeleteValue(key) {
     GM_deleteValue(key);
 }
+
 function debug_ListValues() {
     const keys = GM_listValues();
     for (var key of keys) {
@@ -409,26 +438,34 @@ $$$$$replace$$$$$
     SimpleNovelReader.querySelector("#myt-snr-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-close-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-prev").addEventListener("click", switchChapter);
+    SimpleNovelReader.querySelector("#myt-snr-info").addEventListener("click", () => window.location = SimpleNovelReader.querySelector("#myt-snr-info").dataset.href);
     SimpleNovelReader.querySelector("#myt-snr-next").addEventListener("click", switchChapter);
 
     SimpleNovelReader.querySelector("#myt-snr-setting-font-size-minus").addEventListener("click", () => updateFontSize(-1));
     SimpleNovelReader.querySelector("#myt-snr-setting-font-size-plus").addEventListener("click", () => updateFontSize(1));
-    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-minus").addEventListener("click", () => updateLineSpace(-.1));
-    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-plus").addEventListener("click", () => updateLineSpace(.1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-minus").addEventListener("click", () => updateLineSpace(-0.1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-plus").addEventListener("click", () => updateLineSpace(0.1));
     SimpleNovelReader.querySelector("#myt-snr-setting-max-width-minus").addEventListener("click", () => updateMaxWidth(-1));
     SimpleNovelReader.querySelector("#myt-snr-setting-max-width-plus").addEventListener("click", () => updateMaxWidth(1));
 
-    for (var btn of SimpleNovelReader.querySelectorAll(".x-myt-hidden-radio")) {
+    SimpleNovelReader.querySelector("#myt-snr-setting-custom-style-import").addEventListener("change", importCustomStyle);
+    SimpleNovelReader.querySelector("#myt-snr-setting-custom-style-apply").addEventListener("click", applyCustomStyle);
+    SimpleNovelReader.querySelector("#myt-snr-setting-custom-style-disable").addEventListener("click", disableCustomStyle);
+
+    var btn;
+    for (btn of SimpleNovelReader.querySelectorAll(".x-myt-hidden-radio")) {
         btn.addEventListener("change", updateRadioButton);
     }
-    for (var btn of SimpleNovelReader.querySelectorAll(".x-myt-snr-setting-font-family")) {
+    for (btn of SimpleNovelReader.querySelectorAll(".x-myt-snr-setting-font-family")) {
         btn.addEventListener("change", updateFontFamilyByRadio);
     }
-    for (var btn of SimpleNovelReader.querySelectorAll(".x-myt-setting-color-scheme")) {
+    for (btn of SimpleNovelReader.querySelectorAll(".x-myt-setting-color-scheme")) {
         btn.addEventListener("change", updateColorScheme);
     }
+
     SimpleNovelReader.querySelector("#myt-snr-setting-font-family-custom-name").value = GM_getValue("config.font-family.custom", "");
     SimpleNovelReader.querySelector("#myt-snr-setting-font-family-custom-name").addEventListener("input", updateFontFamilyByInput);
+
     updateRadioButtonGroup("font-family", GM_getValue("config.font-family", "sans-serif"));
     updateRadioButtonGroup("color-scheme", GM_getValue("config.color-scheme", "auto"));
     updateCustomFontButtonStyle();

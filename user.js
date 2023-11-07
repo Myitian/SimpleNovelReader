@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.4
+// @version       0.5
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -68,7 +68,7 @@ function extractPageData(doc) {
         prev: prev?.includes(".html") ? prev.trim() : "",
         info: info?.trim() ?? "",
         next: next?.includes(".html") ? next.trim() : ""
-    }
+    };
 }
 
 /**
@@ -168,11 +168,11 @@ function toggleSettingDisplay() {
     /**
      * @type {HTMLDivElement}
      */
-    var settings = document.querySelector("#myt-snr-setting-items");
+    var settings = SimpleNovelReader.querySelector("#myt-snr-setting-items");
     if (settings.toggleAttribute("hidden")) {
-        document.querySelector("#myt-snr-settings").innerText = "展开样式设置";
+        SimpleNovelReader.querySelector("#myt-snr-settings").innerText = "展开样式设置";
     } else {
-        document.querySelector("#myt-snr-settings").innerText = "收起样式设置";
+        SimpleNovelReader.querySelector("#myt-snr-settings").innerText = "收起样式设置";
     }
 }
 
@@ -217,8 +217,8 @@ function updateContentStyle() {
 /**
  * @param {boolean} useCustomStyle
  */
-function updateCustomStyle(useCustomStyle) {
-    if (useCustomStyle) {
+function updateCustomStyle() {
+    if (GM_getValue("config.custom-style.enabled", false)) {
         SimpleNovelReader.querySelector("#myt-snr-custom-style").innerHTML = GM_getValue("config.custom-style", "");
     } else {
         SimpleNovelReader.querySelector("#myt-snr-custom-style").innerHTML = "";
@@ -298,15 +298,15 @@ function updateFontSize(diff) {
     var newVal = oldVal;
     if (oldVal <= min) {
         newVal = min;
-        document.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-font-size-minus").toggleAttribute("disabled", false);
     }
     if (oldVal >= max) {
         newVal = max;
-        document.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-font-size-plus").toggleAttribute("disabled", false);
     }
     GM_setValue("config.font-size", newVal);
     updateContentStyle();
@@ -316,21 +316,21 @@ function updateFontSize(diff) {
  * @param {number} diff 
  */
 function updateLineSpace(diff) {
-    const min = .5;
+    const min = 0.5;
     const max = 5;
     var oldVal = GM_getValue("config.line-height", 1.5) + diff;
     var newVal = oldVal;
     if (oldVal <= min) {
         newVal = min;
-        document.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-line-height-minus").toggleAttribute("disabled", false);
     }
     if (oldVal >= max) {
         newVal = max;
-        document.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-line-height-plus").toggleAttribute("disabled", false);
     }
     GM_setValue("config.line-height", parseFloat(newVal.toFixed(1)));
     updateContentStyle();
@@ -346,15 +346,15 @@ function updateMaxWidth(diff) {
     var newVal = oldVal;
     if (oldVal <= min) {
         newVal = min;
-        document.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-max-width-minus").toggleAttribute("disabled", false);
     }
     if (oldVal >= max) {
         newVal = max;
-        document.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", true);
+        SimpleNovelReader.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", true);
     } else {
-        document.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", false);
+        SimpleNovelReader.querySelector("#myt-snr-setting-max-width-plus").toggleAttribute("disabled", false);
     }
     GM_setValue("config.max-width", newVal);
     updateContentStyle();
@@ -372,6 +372,33 @@ function updateColorScheme(event) {
     SimpleNovelReader.dataset.colorScheme = radio.dataset.value;
 }
 
+/**
+ * @param {Event} event
+ */
+function importCustomStyle(event) {
+    /**
+     * @type {HTMLInputElement}
+     */
+    var input = event.target;
+    input.files[0].text().then(
+        s => {
+            SimpleNovelReader.querySelector("#myt-snr-setting-custom-style").value = s;
+            GM_setValue("config.custom-style", s);
+        }
+    );
+}
+
+function applyCustomStyle() {
+    GM_setValue("config.custom-style", SimpleNovelReader.querySelector("#myt-snr-setting-custom-style").value);
+    GM_setValue("config.custom-style.enabled", true);
+    updateCustomStyle();
+}
+
+function disableCustomStyle() {
+    GM_setValue("config.custom-style.enabled", false);
+    updateCustomStyle();
+}
+
 function deleteData() {
     if (confirm("确认删除储存的样式数据？")) {
         GM_deleteValue("config.font-family");
@@ -380,14 +407,16 @@ function deleteData() {
         GM_deleteValue("config.font-size");
         GM_deleteValue("config.line-height");
         GM_deleteValue("config.max-width");
-        GM_deleteValue("config.custom-style");
         GM_deleteValue("config.color-scheme");
+        GM_deleteValue("config.custom-style");
+        GM_deleteValue("config.custom-style.enabled");
     }
 }
 
 function debug_DeleteValue(key) {
     GM_deleteValue(key);
 }
+
 function debug_ListValues() {
     const keys = GM_listValues();
     for (var key of keys) {
@@ -410,27 +439,27 @@ function main() {
             <div id="myt-snr-setting-font-family" class="x-myt-list-item">
                 <div id="myt-snr-close-settings">
                     <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" d="M6 6l12 12m0-12L6 18" fill="none" stroke-width="1.5"></path>
+                        <path d="M6 6l12 12m0-12L6 18" />
                     </svg>
                 </div>
                 <h6>字体</h6>
                 <div><!--
                  --><span class="x-nobr"><!--
                      --><input id="myt-snr-setting-font-family-sans-serif"
-                            class="x-myt-hidden-radio x-myt-snr-setting-font-family" type="radio"
+                            class="x-myt-hidden-radio x-myt-hidden-input x-myt-snr-setting-font-family" type="radio"
                             data-value="sans-serif" name="font-family"><!--
                      --><label for="myt-snr-setting-font-family-sans-serif"
                             class="x-myt-hidden-radio-button x-myt-button" style="font-family: sans-serif;">无衬线体</label><!--
                      --><input id="myt-snr-setting-font-family-serif"
-                            class="x-myt-hidden-radio x-myt-snr-setting-font-family" type="radio" data-value="serif"
-                            name="font-family"><!--
+                            class="x-myt-hidden-radio x-myt-hidden-input x-myt-snr-setting-font-family" type="radio"
+                            data-value="serif" name="font-family"><!--
                      --><label for="myt-snr-setting-font-family-serif" class="x-myt-hidden-radio-button x-myt-button"
                             style="font-family: serif;">衬线体</label><!--
                  --></span><!--
                  --><wbr><!--
                  --><input id="myt-snr-setting-font-family-custom"
-                        class="x-myt-hidden-radio x-myt-snr-setting-font-family" type="radio" data-value="custom"
-                        name="font-family"><!--
+                        class="x-myt-hidden-radio x-myt-hidden-input x-myt-snr-setting-font-family" type="radio"
+                        data-value="custom" name="font-family"><!--
                  --><wbr><!--
                  --><label for="myt-snr-setting-font-family-custom"
                         class="x-myt-hidden-radio-button x-myt-button">自定义</label><!--
@@ -441,25 +470,55 @@ function main() {
                 <div class="x-setting-short-item">
                     <h6>字号</h6>
                     <div><!--
-                     --><button id="myt-snr-setting-font-size-minus" class="x-myt-button">-</button><!--
+                     --><button id="myt-snr-setting-font-size-minus" class="x-myt-button x-minus" title="减少"><!--
+                         --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
+                                viewBox="0 0 24 24">
+                                <path d="M6 12h12" />
+                            </svg><!--
+                     --></button><!--
                      --><span id="myt-snr-setting-font-size-value" class="x-middle">中</span><!--
-                     --><button id="myt-snr-setting-font-size-plus" class="x-myt-button">+</button><!--
+                     --><button id="myt-snr-setting-font-size-plus" class="x-myt-button x-plus" title="增加"><!--
+                         --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
+                                viewBox="0 0 24 24">
+                                <path d="M6 12h12M12 6v12" />
+                            </svg><!--
+                     --></button><!--
                  --></div>
                 </div>
                 <div class="x-setting-short-item">
                     <h6>行间距</h6>
                     <div><!--
-                     --><button id="myt-snr-setting-line-height-minus" class="x-myt-button">-</button><!--
+                     --><button id="myt-snr-setting-line-height-minus" class="x-myt-button x-minus" title="减少"><!--
+                         --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
+                                viewBox="0 0 24 24">
+                                <path d="M6 12h12" />
+                            </svg><!--
+                     --></button><!--
                      --><span id="myt-snr-setting-line-height-value" class="x-middle">1.5</span><!--
-                     --><button id="myt-snr-setting-line-height-plus" class="x-myt-button">+</button><!--
+                     --><button id="myt-snr-setting-line-height-plus" class="x-myt-button x-plus" title="增加"><!--
+                         --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
+                                viewBox="0 0 24 24">
+                                <path d="M6 12h12M12 6v12" />
+                            </svg><!--
+                     --></button><!--
                  --></div>
                 </div>
                 <div class="x-setting-short-item">
                     <h6>最大内容宽度</h6>
                     <div><!--
-                     --><button id="myt-snr-setting-max-width-minus" class="x-myt-button">-</button><!--
+                     --><button id="myt-snr-setting-max-width-minus" class="x-myt-button x-minus" title="减少"><!--
+                         --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
+                                viewBox="0 0 24 24">
+                                <path d="M6 12h12" />
+                            </svg><!--
+                     --></button><!--
                      --><span id="myt-snr-setting-max-width-value" class="x-middle">40em</span><!--
-                     --><button id="myt-snr-setting-max-width-plus" class="x-myt-button">+</button><!--
+                     --><button id="myt-snr-setting-max-width-plus" class="x-myt-button x-plus" title="增加"><!--
+                         --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
+                                viewBox="0 0 24 24">
+                                <path d="M6 12h12M12 6v12" />
+                            </svg><!--
+                     --></button><!--
                  --></div>
                 </div>
             </div>
@@ -467,39 +526,39 @@ function main() {
                 <div><!--
                  --><span class="x-nobr"><!--
                      --><input id="myt-snr-setting-color-scheme-light"
-                            class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="light"
-                            name="color-scheme"><!--
+                            class="x-myt-hidden-radio x-myt-hidden-input x-myt-setting-color-scheme" type="radio"
+                            data-value="light" name="color-scheme"><!--
                      --><label for="myt-snr-setting-color-scheme-light" data-color-scheme="light"
                             class="x-myt-hidden-radio-button x-myt-button">浅色</label><!--
                      --><input id="myt-snr-setting-color-scheme-dark"
-                            class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="dark"
-                            name="color-scheme"><!--
+                            class="x-myt-hidden-radio x-myt-hidden-input x-myt-setting-color-scheme" type="radio"
+                            data-value="dark" name="color-scheme"><!--
                      --><label for="myt-snr-setting-color-scheme-dark" data-color-scheme="dark"
                             class="x-myt-hidden-radio-button x-myt-button">深色</label><!--
                  --></span><!--
                  --><wbr><!--
                  --><span class="x-nobr"><!--
                      --><input id="myt-snr-setting-color-scheme-sepia"
-                            class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="sepia"
-                            name="color-scheme"><!--
+                            class="x-myt-hidden-radio x-myt-hidden-input x-myt-setting-color-scheme" type="radio"
+                            data-value="sepia" name="color-scheme"><!--
                      --><label for="myt-snr-setting-color-scheme-sepia" data-color-scheme="sepia"
                             class="x-myt-hidden-radio-button x-myt-button">纸墨</label><!--
                      --><input id="myt-snr-setting-color-scheme-ex-dark"
-                            class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="ex-dark"
-                            name="color-scheme"><!--
+                            class="x-myt-hidden-radio x-myt-hidden-input x-myt-setting-color-scheme" type="radio"
+                            data-value="ex-dark" name="color-scheme"><!--
                      --><label for="myt-snr-setting-color-scheme-ex-dark" data-color-scheme="ex-dark"
                             class="x-myt-hidden-radio-button x-myt-button">极黑</label><!--
                  --></span><!--
                  --><wbr><!--
                  --><span class="x-nobr"><!--
                      --><input id="myt-snr-setting-color-scheme-sepia2"
-                            class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="sepia2"
-                            name="color-scheme"><!--
+                            class="x-myt-hidden-radio x-myt-hidden-input x-myt-setting-color-scheme" type="radio"
+                            data-value="sepia2" name="color-scheme"><!--
                      --><label for="myt-snr-setting-color-scheme-sepia2" data-color-scheme="sepia2"
                             class="x-myt-hidden-radio-button x-myt-button">纸墨2</label><!--
                      --><input id="myt-snr-setting-color-scheme-auto"
-                            class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="auto"
-                            name="color-scheme"><!--
+                            class="x-myt-hidden-radio x-myt-hidden-input x-myt-setting-color-scheme" type="radio"
+                            data-value="auto" name="color-scheme"><!--
                      --><label for="myt-snr-setting-color-scheme-auto" class="x-myt-hidden-radio-button x-myt-button"
                             data-color-scheme="auto">自动</label><!--
                  --></span><!--
@@ -507,23 +566,25 @@ function main() {
             </div>
             <div class="x-myt-list-item">
                 <div><!--
-                 --><label for="myt-snr-setting-style-custom">自定义样式</label><!--
-                 --><wbr><!--
-                 --><input id="myt-snr-setting-style-custom" type="text"><!--
+                 --><label for="myt-snr-setting-custom-style">自定义样式</label><!--
+                 --><br><!--
+                 --><input id="myt-snr-setting-custom-style" type="text"><!--
              --></div>
                 <div><!--
-                 --><button id="myt-snr-setting-style-custom-import" class="x-myt-button">导入</button><!--
+                 --><input id="myt-snr-setting-custom-style-import" class="x-myt-hidden-input" type="file"
+                        accept="text/css"><!--
+                 --><label for="myt-snr-setting-custom-style-import" class="x-myt-button">导入</label><!--
                  --><wbr><!--
-                 --><button id="myt-snr-setting-style-custom-confirm" class="x-myt-button">应用</button><!--
+                 --><button id="myt-snr-setting-custom-style-apply" class="x-myt-button">应用</button><!--
                  --><wbr><!--
-                 --><button id="myt-snr-setting-style-custom-confirm" class="x-myt-button">停用</button><!--
+                 --><button id="myt-snr-setting-custom-style-disable" class="x-myt-button">停用</button><!--
              --></div>
             </div>
         </div>
     </header>
     <nav id="myt-snr-nav" class="x-myt-content-style"><!--
      --><button id="myt-snr-prev" class="x-myt-button x-left">上一章</button><!--
-     --><button id="myt-snr-info" class="x-myt-button x-middle" disabled><span class="x-nobr">章节</span><span
+     --><button id="myt-snr-info" class="x-myt-button x-middle"><span class="x-nobr">章节</span><span
                 class="x-nobr">列表</span></button><!--
      --><button id="myt-snr-next" class="x-myt-button x-right">下一章</button><!--
  --></nav><!--
@@ -549,11 +610,8 @@ function main() {
         --x-max-width: 40em;
     }
 
-    #myt-snr-content * {
-        color: inherit;
-        font-family: inherit;
-        font-size: inherit;
-        line-height: inherit;
+    #myt-snr-root * {
+        transition: all 0.2s ease;
     }
 
     #myt-snr-root *::selection {
@@ -598,7 +656,6 @@ function main() {
         border-radius: .3em;
         margin: .5em 1em;
         cursor: pointer;
-        transition: all 0.2s ease;
         background: var(--x-snr-background-button);
         color: var(--x-snr-foreground-button);
         fill: var(--x-snr-foreground-button);
@@ -610,13 +667,29 @@ function main() {
         user-select: none;
     }
 
-    .x-myt-button:enabled:hover {
+    #myt-snr-content * {
+        color: inherit;
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+    }
+
+    .x-minus,
+    .x-plus {
+        width: 2em;
+        height: 2em;
+        padding: 0;
+    }
+
+    .x-myt-button:enabled:hover,
+    label.x-myt-button:hover {
         background: var(--x-snr-background-button-hover);
         color: var(--x-snr-foreground-button-hover);
         fill: var(--x-snr-foreground-button-hover);
     }
 
-    .x-myt-button:enabled:active {
+    .x-myt-button:enabled:active,
+    label.x-myt-button:active {
         background: var(--x-snr-background-button-active);
         color: var(--x-snr-foreground-button-active);
         fill: var(--x-snr-foreground-button-active);
@@ -667,8 +740,10 @@ function main() {
         width: 8em;
     }
 
-    #myt-snr-setting-style-custom {
+    #myt-snr-setting-custom-style {
         width: 100%;
+        box-sizing: border-box;
+        margin: .2em 0;
     }
 
     #myt-snr-setting-items .x-myt-list-item {
@@ -715,6 +790,10 @@ function main() {
         top: 0;
     }
 
+    #myt-snr-close-settings:hover {
+        rotate: 90deg;
+    }
+
     .x-myt-hidden-radio-button[checked] {
         border-color: var(--x-snr-selected-border);
     }
@@ -730,10 +809,10 @@ function main() {
         inset-inline-start: -2px;
     }
 
-    .x-myt-hidden-radio {
+    .x-myt-hidden-input {
         pointer-events: none;
         position: absolute;
-        visibility: hidden;
+        opacity: 0;
     }
 
     #myt-snr-nav {
@@ -784,8 +863,11 @@ function main() {
         padding: revert;
     }
 
-    svg {
+    #myt-snr-root svg {
         stroke: var(--x-snr-border);
+        stroke-linecap: round;
+        stroke-width: 1.5;
+        fill: none;
     }
 
     [data-color-scheme=light] {
@@ -842,8 +924,8 @@ function main() {
         --x-snr-background-level-0: rgb(244, 236, 216);
         --x-snr-background-level-1: rgb(229, 219, 200);
         --x-snr-background-button: var(--x-snr-background-level-1);
-        --x-snr-background-button-hover: #ddd;
-        --x-snr-background-button-active: #ccc;
+        --x-snr-background-button-hover: rgb(200, 190, 170);
+        --x-snr-background-button-active: rgb(170, 160, 140);
         --x-snr-background-selected: rgba(0, 97, 224, 0.3);
         --x-snr-background-selected-text: var(--x-snr-background-selected);
         --x-snr-background-selected-link: var(--x-snr-background-selected);
@@ -980,26 +1062,34 @@ function main() {
     SimpleNovelReader.querySelector("#myt-snr-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-close-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-prev").addEventListener("click", switchChapter);
+    SimpleNovelReader.querySelector("#myt-snr-info").addEventListener("click", () => window.location = SimpleNovelReader.querySelector("#myt-snr-info").dataset.href);
     SimpleNovelReader.querySelector("#myt-snr-next").addEventListener("click", switchChapter);
 
     SimpleNovelReader.querySelector("#myt-snr-setting-font-size-minus").addEventListener("click", () => updateFontSize(-1));
     SimpleNovelReader.querySelector("#myt-snr-setting-font-size-plus").addEventListener("click", () => updateFontSize(1));
-    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-minus").addEventListener("click", () => updateLineSpace(-.1));
-    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-plus").addEventListener("click", () => updateLineSpace(.1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-minus").addEventListener("click", () => updateLineSpace(-0.1));
+    SimpleNovelReader.querySelector("#myt-snr-setting-line-height-plus").addEventListener("click", () => updateLineSpace(0.1));
     SimpleNovelReader.querySelector("#myt-snr-setting-max-width-minus").addEventListener("click", () => updateMaxWidth(-1));
     SimpleNovelReader.querySelector("#myt-snr-setting-max-width-plus").addEventListener("click", () => updateMaxWidth(1));
 
-    for (var btn of SimpleNovelReader.querySelectorAll(".x-myt-hidden-radio")) {
+    SimpleNovelReader.querySelector("#myt-snr-setting-custom-style-import").addEventListener("change", importCustomStyle);
+    SimpleNovelReader.querySelector("#myt-snr-setting-custom-style-apply").addEventListener("click", applyCustomStyle);
+    SimpleNovelReader.querySelector("#myt-snr-setting-custom-style-disable").addEventListener("click", disableCustomStyle);
+
+    var btn;
+    for (btn of SimpleNovelReader.querySelectorAll(".x-myt-hidden-radio")) {
         btn.addEventListener("change", updateRadioButton);
     }
-    for (var btn of SimpleNovelReader.querySelectorAll(".x-myt-snr-setting-font-family")) {
+    for (btn of SimpleNovelReader.querySelectorAll(".x-myt-snr-setting-font-family")) {
         btn.addEventListener("change", updateFontFamilyByRadio);
     }
-    for (var btn of SimpleNovelReader.querySelectorAll(".x-myt-setting-color-scheme")) {
+    for (btn of SimpleNovelReader.querySelectorAll(".x-myt-setting-color-scheme")) {
         btn.addEventListener("change", updateColorScheme);
     }
+
     SimpleNovelReader.querySelector("#myt-snr-setting-font-family-custom-name").value = GM_getValue("config.font-family.custom", "");
     SimpleNovelReader.querySelector("#myt-snr-setting-font-family-custom-name").addEventListener("input", updateFontFamilyByInput);
+
     updateRadioButtonGroup("font-family", GM_getValue("config.font-family", "sans-serif"));
     updateRadioButtonGroup("color-scheme", GM_getValue("config.color-scheme", "auto"));
     updateCustomFontButtonStyle();
