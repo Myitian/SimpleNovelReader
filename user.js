@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.3
+// @version       0.3.1
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -94,7 +94,7 @@ function loadUrl(url) {
         xhr => {
             loadPageData(extractPageData(xhr.response));
         }
-    )
+    );
 }
 
 /**
@@ -146,7 +146,7 @@ function show(url = undefined) {
         var newUrl = new URL(url);
         newUrl.hash = "#simple-novel-reader";
         history.pushState(null, "", newUrl.toString());
-        SimpleNovelReader.scrollTop = 0
+        SimpleNovelReader.scrollTop = 0;
         loadUrl(url);
     }
 }
@@ -325,10 +325,9 @@ function main() {
                     <span class="x-nobr">
                         <input id="myt-snr-setting-font-family-sans-serif"
                             class="x-myt-hidden-radio x-myt-snr-setting-font-family" type="radio"
-                            data-value="sans-serif" name="font-family" checked>
+                            data-value="sans-serif" name="font-family">
                         <label for="myt-snr-setting-font-family-sans-serif"
-                            class="x-myt-hidden-radio-button x-myt-button" style="font-family: sans-serif;"
-                            checked>无衬线体</label>
+                            class="x-myt-hidden-radio-button x-myt-button" style="font-family: sans-serif;">无衬线体</label>
                         <input id="myt-snr-setting-font-family-serif"
                             class="x-myt-hidden-radio x-myt-snr-setting-font-family" type="radio" data-value="serif"
                             name="font-family">
@@ -340,7 +339,7 @@ function main() {
                         name="font-family">
                     <label for="myt-snr-setting-font-family-custom"
                         class="x-myt-hidden-radio-button x-myt-button">自定义</label>
-                    <input id="myt-snr-setting-font-family-custom-name">
+                    <input id="myt-snr-setting-font-family-custom-name" type="text">
                 </div>
             </div>
             <div class="x-myt-list-item">
@@ -403,16 +402,16 @@ function main() {
                             class="x-myt-hidden-radio-button x-myt-button">纸墨2</label>
                         <input id="myt-snr-setting-color-scheme-auto"
                             class="x-myt-hidden-radio x-myt-setting-color-scheme" type="radio" data-value="auto"
-                            name="color-scheme" checked>
+                            name="color-scheme">
                         <label for="myt-snr-setting-color-scheme-auto" class="x-myt-hidden-radio-button x-myt-button"
-                            data-color-scheme="auto" checked>自动</label>
+                            data-color-scheme="auto">自动</label>
                     </span>
                 </div>
             </div>
             <div class="x-myt-list-item">
                 <div>
                     <label for="myt-snr-setting-style-custom">自定义样式</label>
-                    <input id="myt-snr-setting-style-custom">
+                    <input id="myt-snr-setting-style-custom" type="text">
                 </div>
                 <div>
                     <button id="myt-snr-setting-style-custom-import" class="x-myt-button">导入</button>
@@ -475,6 +474,18 @@ function main() {
     #myt-snr-root a::selection {
         background: var(--x-snr-background-selected-link);
         color: var(--x-snr-foreground-selected-link);
+    }
+
+    #myt-snr-root input[type=text] {
+        background: var(--x-snr-background-level-1);
+        border: 2px solid var(--x-snr-border);
+    }
+
+    #myt-snr-root label {
+        display: inline-block;
+        max-width: unset;
+        margin-bottom: 6px;
+        font-weight: revert;
     }
 
     .x-myt-button {
@@ -885,7 +896,7 @@ const FontSizes = [
     ["large", "较大"],
     ["x-large", "大"],
     ["xx-large", "极大"]
-]
+];
 const SimpleNovelReader = document.createElement("div");
 const OriginalUrl = window.location.origin + window.location.pathname + window.location.search;
 main();

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.3
+// @version       0.3.1
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -94,7 +94,7 @@ function loadUrl(url) {
         xhr => {
             loadPageData(extractPageData(xhr.response));
         }
-    )
+    );
 }
 
 /**
@@ -146,7 +146,7 @@ function show(url = undefined) {
         var newUrl = new URL(url);
         newUrl.hash = "#simple-novel-reader";
         history.pushState(null, "", newUrl.toString());
-        SimpleNovelReader.scrollTop = 0
+        SimpleNovelReader.scrollTop = 0;
         loadUrl(url);
     }
 }
@@ -348,7 +348,7 @@ const FontSizes = [
     ["large", "较大"],
     ["x-large", "大"],
     ["xx-large", "极大"]
-]
+];
 const SimpleNovelReader = document.createElement("div");
 const OriginalUrl = window.location.origin + window.location.pathname + window.location.search;
 main();
