@@ -1,18 +1,23 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.5.0.1
+// @version       0.5.0.2
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
 // @license       MIT
 // @match         *://*.xiaoshuohu.com/*/*/*.html*
-// @match         *://*.bqgpp.com/read/*/*.html*
-// @match         *://*.52bqg.org/book_*/*.html*
-// @match         *://*.bqg78.cc/book/*/*.html*
+// @match         *://*.ibiquge.cc/*/*.html*
 // @match         *://*.beqege.com/*/*.html*
 // @match         *://*.beqege.cc/*/*.html*
+// @match         *://*.biqiuge.net/*_*/*.html*
+// @match         *://*.biquge11.cc/read/*/*.html*
+// @match         *://*.bqgpp.com/read/*/*.html*
 // @match         *://*.biquge66.net/book/*/*.html*
+// @match         *://*.52bqg.org/book_*/*.html*
+// @match         *://*.bqg78.cc/book/*/*.html*
+// @match         *://*.bige3.cc/book/*/*.html*
+// @match         *://*.biqg.cc/book/*/*.html*
 // @match         *://*.wxsc8.com/book/*/*.html*
 // @match         *://*.zhenhunxiaoshuo.com/*.html*
 // @match         *://*.xyyuedu.com/writer/*/*/*.html*
@@ -34,7 +39,7 @@ function extractPageData(doc) {
     var title = (
         doc.querySelector("#arcxs_title>h1,.bookname>h1") ??
         doc.querySelector(".article-title,.bookname,#nr_title,.title,.zhong,.cont-title") ??
-        doc.querySelector("h1") 
+        doc.querySelector("h1")
     )?.innerText;
     /**
      * @type {string}
@@ -42,28 +47,28 @@ function extractPageData(doc) {
     var content = (
         doc.querySelector("#onearcxsbd,#cont-body") ??
         doc.querySelector(".article-content,#content,#chaptercontent,#nr,.article") ??
-        doc.querySelector("article") 
+        doc.querySelector("article")
     )?.innerHTML.replace("　", "");
     /**
      * @type {?string}
      */
     var prev = (
         doc.querySelector("[rel=prev],#prev_url,#pb_prev,#link-preview") ??
-        doc.querySelector(".bottem1>a:nth-child(1),.col-md-6.text-center>a[href]:nth-child(1),b>a.prevPage:nth-child(1),td.prev>a,article>ul.pages>li:nth-child(2)>a")
+        doc.querySelector(".bottem1>a:nth-child(1),.col-md-6.text-center>a[href]:nth-child(1),b>a.prevPage:nth-child(1),td.prev>a,article>ul.pages>li:nth-child(2)>a,.page_chapter>ul>li:nth-child(1)>a")
     )?.href;
     /**
      * @type {?string}
      */
     var info = (
         doc.querySelector("[rel='category tag'],#info_url,#pb_mulu,#link-index") ??
-        doc.querySelector(".bottem1>a:nth-child(2),.col-md-6.text-center>a[href]:nth-child(2),a.returnIndex,td.mulu>a,article>ul.pages>li:nth-child(4)>a")
+        doc.querySelector(".bottem1>a:nth-child(2),.col-md-6.text-center>a[href]:nth-child(2),a.returnIndex,td.mulu>a,article>ul.pages>li:nth-child(4)>a,.page_chapter>ul>li:nth-child(2)>a")
     )?.href;
     /**
      * @type {?string}
      */
     var next = (
         doc.querySelector("[rel=next],#next_url,#pb_next,#link-next") ??
-        doc.querySelector(".bottem1>a:nth-child(3),.col-md-6.text-center>a[href]:nth-child(3),b>a.prevPage:nth-child(2),td.next>a,article>ul.pages>li:nth-child(3)>a")
+        doc.querySelector(".bottem1>a:nth-child(3),.col-md-6.text-center>a[href]:nth-child(3),b>a.prevPage:nth-child(2),td.next>a,article>ul.pages>li:nth-child(3)>a,.page_chapter>ul>li:nth-child(3)>a")
     )?.href;
     return {
         pageTitle: doc.title.trim(),
@@ -733,7 +738,7 @@ function main() {
         margin-top: 1em;
     }
 
-    #myt-snr-setting-items {
+    #myt-snr-root #myt-snr-setting-items {
         position: fixed;
         background: var(--x-snr-background-level-0);
         border: 1px solid var(--x-snr-border);
