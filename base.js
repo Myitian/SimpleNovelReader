@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.5
+// @version       0.5.0.1
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -15,6 +15,8 @@
 // @match         *://*.biquge66.net/book/*/*.html*
 // @match         *://*.wxsc8.com/book/*/*.html*
 // @match         *://*.zhenhunxiaoshuo.com/*.html*
+// @match         *://*.xyyuedu.com/writer/*/*/*.html*
+// @match         *://*.wxzpyd.com/novel/chapter/*.html*
 // @grant         GM_getValue
 // @grant         GM_setValue
 // @grant         GM_deleteValue
@@ -30,36 +32,38 @@ function extractPageData(doc) {
      * @type {string}
      */
     var title = (
-        doc.querySelector(".bookname>h1") ??
-        doc.querySelector(".article-title,.bookname,#nr_title,.title,.zhong,.cont-title")
+        doc.querySelector("#arcxs_title>h1,.bookname>h1") ??
+        doc.querySelector(".article-title,.bookname,#nr_title,.title,.zhong,.cont-title") ??
+        doc.querySelector("h1") 
     )?.innerText;
     /**
      * @type {string}
      */
     var content = (
-        doc.querySelector("#cont-body") ??
-        doc.querySelector(".article-content,#content,#chaptercontent,#nr")
+        doc.querySelector("#onearcxsbd,#cont-body") ??
+        doc.querySelector(".article-content,#content,#chaptercontent,#nr,.article") ??
+        doc.querySelector("article") 
     )?.innerHTML.replace("　", "");
     /**
      * @type {?string}
      */
     var prev = (
-        doc.querySelector("[rel=prev],#prev_url,#pb_prevz,#link-preview") ??
-        doc.querySelector(".bottem1>a:nth-child(1),.col-md-6.text-center>a[href]:nth-child(1)")
+        doc.querySelector("[rel=prev],#prev_url,#pb_prev,#link-preview") ??
+        doc.querySelector(".bottem1>a:nth-child(1),.col-md-6.text-center>a[href]:nth-child(1),b>a.prevPage:nth-child(1),td.prev>a,article>ul.pages>li:nth-child(2)>a")
     )?.href;
     /**
      * @type {?string}
      */
     var info = (
         doc.querySelector("[rel='category tag'],#info_url,#pb_mulu,#link-index") ??
-        doc.querySelector(".bottem1>a:nth-child(2),.col-md-6.text-center>a[href]:nth-child(2)")
+        doc.querySelector(".bottem1>a:nth-child(2),.col-md-6.text-center>a[href]:nth-child(2),a.returnIndex,td.mulu>a,article>ul.pages>li:nth-child(4)>a")
     )?.href;
     /**
      * @type {?string}
      */
     var next = (
         doc.querySelector("[rel=next],#next_url,#pb_next,#link-next") ??
-        doc.querySelector(".bottem1>a:nth-child(3),.col-md-6.text-center>a[href]:nth-child(3)")
+        doc.querySelector(".bottem1>a:nth-child(3),.col-md-6.text-center>a[href]:nth-child(3),b>a.prevPage:nth-child(2),td.next>a,article>ul.pages>li:nth-child(3)>a")
     )?.href;
     return {
         pageTitle: doc.title.trim(),
@@ -202,7 +206,7 @@ function updateContentStyle() {
     SimpleNovelReader.querySelector("#myt-snr-setting-line-height-value").innerText = lineHeightStr;
     SimpleNovelReader.querySelector("#myt-snr-setting-max-width-value").innerText = maxWidthStr;
     SimpleNovelReader.querySelector("#myt-snr-content-style").innerHTML = `
-#myt-snr-root .x-myt-content-style {
+#myt-snr-root * {
     font-family: ${GM_getValue("config.font-family.name", "sans-serif")};
     font-size: ${fontSizeStr[0]};
     line-height: ${lineHeightStr};
@@ -438,7 +442,12 @@ $$$$$replace$$$$$
     SimpleNovelReader.querySelector("#myt-snr-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-close-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-prev").addEventListener("click", switchChapter);
-    SimpleNovelReader.querySelector("#myt-snr-info").addEventListener("click", () => window.location = SimpleNovelReader.querySelector("#myt-snr-info").dataset.href);
+    SimpleNovelReader.querySelector("#myt-snr-info").addEventListener("click", () => {
+        var e = SimpleNovelReader.querySelector("#myt-snr-info");
+        if (e?.dataset.href) {
+            window.location = e.dataset.href;
+        }
+    });
     SimpleNovelReader.querySelector("#myt-snr-next").addEventListener("click", switchChapter);
 
     SimpleNovelReader.querySelector("#myt-snr-setting-font-size-minus").addEventListener("click", () => updateFontSize(-1));

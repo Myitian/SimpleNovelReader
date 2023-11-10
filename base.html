@@ -12,7 +12,7 @@
                         <path d="M6 6l12 12m0-12L6 18" />
                     </svg>
                 </div>
-                <h6>字体</h6>
+                <h6 class="x-myt-content-style">字体</h6>
                 <div>
                     <span class="x-nobr">
                         <input id="myt-snr-setting-font-family-sans-serif"
@@ -38,7 +38,7 @@
             </div>
             <div class="x-myt-list-item">
                 <div class="x-setting-short-item">
-                    <h6>字号</h6>
+                    <h6 class="x-myt-content-style">字号</h6>
                     <div>
                         <button id="myt-snr-setting-font-size-minus" class="x-myt-button x-minus" title="减少">
                             <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
@@ -46,7 +46,7 @@
                                 <path d="M6 12h12" />
                             </svg>
                         </button>
-                        <span id="myt-snr-setting-font-size-value" class="x-middle">中</span>
+                        <span id="myt-snr-setting-font-size-value" class="x-middle x-myt-content-style">中</span>
                         <button id="myt-snr-setting-font-size-plus" class="x-myt-button x-plus" title="增加">
                             <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
                                 viewBox="0 0 24 24">
@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 <div class="x-setting-short-item">
-                    <h6>行间距</h6>
+                    <h6 class="x-myt-default-color x-myt-content-style">行间距</h6>
                     <div>
                         <button id="myt-snr-setting-line-height-minus" class="x-myt-button x-minus" title="减少">
                             <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
@@ -64,7 +64,7 @@
                                 <path d="M6 12h12" />
                             </svg>
                         </button>
-                        <span id="myt-snr-setting-line-height-value" class="x-middle">1.5</span>
+                        <span id="myt-snr-setting-line-height-value" class="x-middle x-myt-content-style">1.5</span>
                         <button id="myt-snr-setting-line-height-plus" class="x-myt-button x-plus" title="增加">
                             <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
                                 viewBox="0 0 24 24">
@@ -74,7 +74,7 @@
                     </div>
                 </div>
                 <div class="x-setting-short-item">
-                    <h6>最大内容宽度</h6>
+                    <h6 class="x-myt-content-style">最大内容宽度</h6>
                     <div>
                         <button id="myt-snr-setting-max-width-minus" class="x-myt-button x-minus" title="减少">
                             <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
@@ -82,7 +82,7 @@
                                 <path d="M6 12h12" />
                             </svg>
                         </button>
-                        <span id="myt-snr-setting-max-width-value" class="x-middle">40em</span>
+                        <span id="myt-snr-setting-max-width-value" class="x-middle x-myt-content-style">40em</span>
                         <button id="myt-snr-setting-max-width-plus" class="x-myt-button x-plus" title="增加">
                             <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
                                 viewBox="0 0 24 24">
@@ -182,6 +182,12 @@
 
     #myt-snr-root * {
         transition: all 0.2s ease;
+    }
+
+    .x-myt-content-style,
+    #myt-snr-root div {
+        background: inherit;
+        color: inherit;
     }
 
     #myt-snr-root *::selection {
@@ -420,11 +426,13 @@
         font-size: revert;
         line-height: revert;
         font-weight: revert;
+        color: var(--x-snr-foreground-level-0);
     }
 
     #myt-snr-root h6 {
         margin: 0;
         font-size: smaller;
+        color: var(--x-snr-foreground-level-0);
     }
 
     #myt-snr-root p {

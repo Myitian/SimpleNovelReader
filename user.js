@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.5
+// @version       0.5.0.1
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -15,6 +15,8 @@
 // @match         *://*.biquge66.net/book/*/*.html*
 // @match         *://*.wxsc8.com/book/*/*.html*
 // @match         *://*.zhenhunxiaoshuo.com/*.html*
+// @match         *://*.xyyuedu.com/writer/*/*/*.html*
+// @match         *://*.wxzpyd.com/novel/chapter/*.html*
 // @grant         GM_getValue
 // @grant         GM_setValue
 // @grant         GM_deleteValue
@@ -30,36 +32,38 @@ function extractPageData(doc) {
      * @type {string}
      */
     var title = (
-        doc.querySelector(".bookname>h1") ??
-        doc.querySelector(".article-title,.bookname,#nr_title,.title,.zhong,.cont-title")
+        doc.querySelector("#arcxs_title>h1,.bookname>h1") ??
+        doc.querySelector(".article-title,.bookname,#nr_title,.title,.zhong,.cont-title") ??
+        doc.querySelector("h1") 
     )?.innerText;
     /**
      * @type {string}
      */
     var content = (
-        doc.querySelector("#cont-body") ??
-        doc.querySelector(".article-content,#content,#chaptercontent,#nr")
+        doc.querySelector("#onearcxsbd,#cont-body") ??
+        doc.querySelector(".article-content,#content,#chaptercontent,#nr,.article") ??
+        doc.querySelector("article") 
     )?.innerHTML.replace("　", "");
     /**
      * @type {?string}
      */
     var prev = (
-        doc.querySelector("[rel=prev],#prev_url,#pb_prevz,#link-preview") ??
-        doc.querySelector(".bottem1>a:nth-child(1),.col-md-6.text-center>a[href]:nth-child(1)")
+        doc.querySelector("[rel=prev],#prev_url,#pb_prev,#link-preview") ??
+        doc.querySelector(".bottem1>a:nth-child(1),.col-md-6.text-center>a[href]:nth-child(1),b>a.prevPage:nth-child(1),td.prev>a,article>ul.pages>li:nth-child(2)>a")
     )?.href;
     /**
      * @type {?string}
      */
     var info = (
         doc.querySelector("[rel='category tag'],#info_url,#pb_mulu,#link-index") ??
-        doc.querySelector(".bottem1>a:nth-child(2),.col-md-6.text-center>a[href]:nth-child(2)")
+        doc.querySelector(".bottem1>a:nth-child(2),.col-md-6.text-center>a[href]:nth-child(2),a.returnIndex,td.mulu>a,article>ul.pages>li:nth-child(4)>a")
     )?.href;
     /**
      * @type {?string}
      */
     var next = (
         doc.querySelector("[rel=next],#next_url,#pb_next,#link-next") ??
-        doc.querySelector(".bottem1>a:nth-child(3),.col-md-6.text-center>a[href]:nth-child(3)")
+        doc.querySelector(".bottem1>a:nth-child(3),.col-md-6.text-center>a[href]:nth-child(3),b>a.prevPage:nth-child(2),td.next>a,article>ul.pages>li:nth-child(3)>a")
     )?.href;
     return {
         pageTitle: doc.title.trim(),
@@ -202,7 +206,7 @@ function updateContentStyle() {
     SimpleNovelReader.querySelector("#myt-snr-setting-line-height-value").innerText = lineHeightStr;
     SimpleNovelReader.querySelector("#myt-snr-setting-max-width-value").innerText = maxWidthStr;
     SimpleNovelReader.querySelector("#myt-snr-content-style").innerHTML = `
-#myt-snr-root .x-myt-content-style {
+#myt-snr-root * {
     font-family: ${GM_getValue("config.font-family.name", "sans-serif")};
     font-size: ${fontSizeStr[0]};
     line-height: ${lineHeightStr};
@@ -442,7 +446,7 @@ function main() {
                         <path d="M6 6l12 12m0-12L6 18" />
                     </svg>
                 </div>
-                <h6>字体</h6>
+                <h6 class="x-myt-content-style">字体</h6>
                 <div><!--
                  --><span class="x-nobr"><!--
                      --><input id="myt-snr-setting-font-family-sans-serif"
@@ -468,7 +472,7 @@ function main() {
             </div>
             <div class="x-myt-list-item">
                 <div class="x-setting-short-item">
-                    <h6>字号</h6>
+                    <h6 class="x-myt-content-style">字号</h6>
                     <div><!--
                      --><button id="myt-snr-setting-font-size-minus" class="x-myt-button x-minus" title="减少"><!--
                          --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
@@ -476,7 +480,7 @@ function main() {
                                 <path d="M6 12h12" />
                             </svg><!--
                      --></button><!--
-                     --><span id="myt-snr-setting-font-size-value" class="x-middle">中</span><!--
+                     --><span id="myt-snr-setting-font-size-value" class="x-middle x-myt-content-style">中</span><!--
                      --><button id="myt-snr-setting-font-size-plus" class="x-myt-button x-plus" title="增加"><!--
                          --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
                                 viewBox="0 0 24 24">
@@ -486,7 +490,7 @@ function main() {
                  --></div>
                 </div>
                 <div class="x-setting-short-item">
-                    <h6>行间距</h6>
+                    <h6 class="x-myt-default-color x-myt-content-style">行间距</h6>
                     <div><!--
                      --><button id="myt-snr-setting-line-height-minus" class="x-myt-button x-minus" title="减少"><!--
                          --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
@@ -494,7 +498,7 @@ function main() {
                                 <path d="M6 12h12" />
                             </svg><!--
                      --></button><!--
-                     --><span id="myt-snr-setting-line-height-value" class="x-middle">1.5</span><!--
+                     --><span id="myt-snr-setting-line-height-value" class="x-middle x-myt-content-style">1.5</span><!--
                      --><button id="myt-snr-setting-line-height-plus" class="x-myt-button x-plus" title="增加"><!--
                          --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
                                 viewBox="0 0 24 24">
@@ -504,7 +508,7 @@ function main() {
                  --></div>
                 </div>
                 <div class="x-setting-short-item">
-                    <h6>最大内容宽度</h6>
+                    <h6 class="x-myt-content-style">最大内容宽度</h6>
                     <div><!--
                      --><button id="myt-snr-setting-max-width-minus" class="x-myt-button x-minus" title="减少"><!--
                          --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
@@ -512,7 +516,7 @@ function main() {
                                 <path d="M6 12h12" />
                             </svg><!--
                      --></button><!--
-                     --><span id="myt-snr-setting-max-width-value" class="x-middle">40em</span><!--
+                     --><span id="myt-snr-setting-max-width-value" class="x-middle x-myt-content-style">40em</span><!--
                      --><button id="myt-snr-setting-max-width-plus" class="x-myt-button x-plus" title="增加"><!--
                          --><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet"
                                 viewBox="0 0 24 24">
@@ -612,6 +616,12 @@ function main() {
 
     #myt-snr-root * {
         transition: all 0.2s ease;
+    }
+
+    .x-myt-content-style,
+    #myt-snr-root div {
+        background: inherit;
+        color: inherit;
     }
 
     #myt-snr-root *::selection {
@@ -850,11 +860,13 @@ function main() {
         font-size: revert;
         line-height: revert;
         font-weight: revert;
+        color: var(--x-snr-foreground-level-0);
     }
 
     #myt-snr-root h6 {
         margin: 0;
         font-size: smaller;
+        color: var(--x-snr-foreground-level-0);
     }
 
     #myt-snr-root p {
@@ -1062,7 +1074,12 @@ function main() {
     SimpleNovelReader.querySelector("#myt-snr-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-close-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-prev").addEventListener("click", switchChapter);
-    SimpleNovelReader.querySelector("#myt-snr-info").addEventListener("click", () => window.location = SimpleNovelReader.querySelector("#myt-snr-info").dataset.href);
+    SimpleNovelReader.querySelector("#myt-snr-info").addEventListener("click", () => {
+        var e = SimpleNovelReader.querySelector("#myt-snr-info");
+        if (e?.dataset.href) {
+            window.location = e.dataset.href;
+        }
+    });
     SimpleNovelReader.querySelector("#myt-snr-next").addEventListener("click", switchChapter);
 
     SimpleNovelReader.querySelector("#myt-snr-setting-font-size-minus").addEventListener("click", () => updateFontSize(-1));
