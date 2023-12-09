@@ -161,6 +161,7 @@
     <article id="myt-snr-content" class="x-myt-content-style">
     </article>
     <footer id="myt-snr-footer" class="x-myt-content-style">
+        <iframe id="myt-snr-preload"></iframe>
     </footer>
 </div>
 <style>
@@ -446,6 +447,20 @@
         stroke-linecap: round;
         stroke-width: 1.5;
         fill: none;
+    }
+
+    #myt-snr-content * {
+        max-width: var(--x-max-width);
+    }
+
+    #myt-snr-content p>img:first-child:last-child,
+    #myt-snr-content p>video:first-child:last-child,
+    #myt-snr-content p>audio:first-child:last-child {
+        margin-left: -2em;
+    }
+
+    #myt-snr-preload {
+        display: none;
     }
 
     [data-color-scheme=light] {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.5.0.2
+// @version       0.6
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -22,12 +22,37 @@
 // @match         *://*.zhenhunxiaoshuo.com/*.html*
 // @match         *://*.xyyuedu.com/writer/*/*/*.html*
 // @match         *://*.wxzpyd.com/novel/chapter/*.html*
+// @match         *://*.e365xs.com/*/read_*.html*
+// @match         *://bh3.mihoyo.com/news/*
+// @match         *://ys.mihoyo.com/main/news/detail/*
+// @match         *://sr.mihoyo.com/news/*
+// @match         *://zzz.mihoyo.com/news/*
 // @grant         GM_getValue
 // @grant         GM_setValue
 // @grant         GM_deleteValue
 // @grant         GM_listValues
 // @grant         GM_registerMenuCommand
 // ==/UserScript==
+const StandalonePageRegex = [
+    /.*:\/\/(?:sr|zzz)\.mihoyo\.com\/.*/
+];
+const DynamicPageRegex = [
+    /.*:\/\/.*\.mihoyo\.com\/.*/
+];
+const FontSizes = [
+    ["xx-small", "极小"],
+    ["x-small", "小"],
+    ["small", "较小"],
+    ["medium", "中"],
+    ["large", "较大"],
+    ["x-large", "大"],
+    ["xx-large", "极大"]
+];
+const SimpleNovelReader = document.createElement("div");
+const OriginalUrl = window.location.origin + window.location.pathname + window.location.search;
+const ActivePageRegex = PageRegex.find(x => x.test(window.location.href));
+const IsDynamicPage = DynamicPageRegex.findIndex(x => x.test(window.location.href)) != -1;
+const IsStandalonePage = StandalonePageRegex.findIndex(x => x.test(window.location.href)) != -1;
 
 /**
  * @param {Document} doc
@@ -37,75 +62,118 @@ function extractPageData(doc) {
      * @type {string}
      */
     var title = (
-        doc.querySelector("#arcxs_title>h1,.bookname>h1") ??
-        doc.querySelector(".article-title,.bookname,#nr_title,.title,.zhong,.cont-title") ??
+        doc.querySelector("#arcxs_title>h1,.bookname>h1,.pt-read-cont>.pt-read-title>h1,.pt-read>div") ??
+        doc.querySelector(".article-title,.bookname,#nr_title,.title,.zhong,.cont-title,.article__title,.news-detail__title") ??
         doc.querySelector("h1")
     )?.innerText;
     /**
      * @type {string}
      */
     var content = (
-        doc.querySelector("#onearcxsbd,#cont-body") ??
-        doc.querySelector(".article-content,#content,#chaptercontent,#nr,.article") ??
+        doc.querySelector("#onearcxsbd,#cont-body,.pt-read-text,.article__bd") ??
+        doc.querySelector(".article-content,#content,#chaptercontent,#nr,.article,.pt-read-cont,.main-wrap,.article__content,.news-detail__content") ??
         doc.querySelector("article")
     )?.innerHTML.replace("　", "");
     /**
      * @type {?string}
      */
     var prev = (
-        doc.querySelector("[rel=prev],#prev_url,#pb_prev,#link-preview") ??
-        doc.querySelector(".bottem1>a:nth-child(1),.col-md-6.text-center>a[href]:nth-child(1),b>a.prevPage:nth-child(1),td.prev>a,article>ul.pages>li:nth-child(2)>a,.page_chapter>ul>li:nth-child(1)>a")
+        doc.querySelector("[rel=prev],#prev_url,#pb_prev,#link-preview,.pt-prechapter>a") ??
+        doc.querySelector(".bottem1>a:nth-child(1),.col-md-6.text-center>a[href]:nth-child(1),b>a.prevPage:nth-child(1),td.prev>a,article>ul.pages>li:nth-child(2)>a,.page_chapter>ul>li:nth-child(1)>a,.pt-prechapter,.buttombar__prev:not(.buttombar__prev--disabled),.article__ft>a[href]:nth-child(1)")
     )?.href;
     /**
      * @type {?string}
      */
     var info = (
-        doc.querySelector("[rel='category tag'],#info_url,#pb_mulu,#link-index") ??
-        doc.querySelector(".bottem1>a:nth-child(2),.col-md-6.text-center>a[href]:nth-child(2),a.returnIndex,td.mulu>a,article>ul.pages>li:nth-child(4)>a,.page_chapter>ul>li:nth-child(2)>a")
+        doc.querySelector("[rel='category tag'],#info_url,#pb_mulu,#link-indexz,.pt-catalogue>a") ??
+        doc.querySelector(".bottem1>a:nth-child(2),.col-md-6.text-center>a[href]:nth-child(2),a.returnIndex,td.mulu>a,article>ul.pages>li:nth-child(4)>a,.page_chapter>ul>li:nth-child(2)>a,.pt-prechapter+a,.news-detail .btn-back,.topbar__back,.nuxt-link-active")
     )?.href;
     /**
      * @type {?string}
      */
     var next = (
-        doc.querySelector("[rel=next],#next_url,#pb_next,#link-next") ??
-        doc.querySelector(".bottem1>a:nth-child(3),.col-md-6.text-center>a[href]:nth-child(3),b>a.prevPage:nth-child(2),td.next>a,article>ul.pages>li:nth-child(3)>a,.page_chapter>ul>li:nth-child(3)>a")
+        doc.querySelector("[rel=next],#next_url,#pb_next,#link-next,.pt-nextchapter>a") ??
+        doc.querySelector(".bottem1>a:nth-child(3),.col-md-6.text-center>a[href]:nth-child(3),b>a.prevPage:nth-child(2),td.next>a,article>ul.pages>li:nth-child(3)>a,.page_chapter>ul>li:nth-child(3)>a,.pt-nextchapter,.buttombar__next:not(.buttombar__next--disabled),.article__ft>a[href]:nth-child(2)")
     )?.href;
     return {
         pageTitle: doc.title.trim(),
         title: title?.trim() ?? "",
         content: content?.trim() ?? "",
-        prev: prev?.includes(".html") ? prev.trim() : "",
+        prev: ActivePageRegex.test(prev) ? prev.trim() : "",
         info: info?.trim() ?? "",
-        next: next?.includes(".html") ? next.trim() : ""
+        next: ActivePageRegex.test(next) ? next.trim() : ""
     };
 }
 
 /**
- * @param {{pageTitle:string,title:string,content:string,prev:string,info:string,next:string}} data
+ * @param {?{pageTitle:string,title:string,content:string,prev:string,info:string,next:string}} data
  */
 function loadPageData(data) {
+    var prev, next;
+    if (!data) {
+        SimpleNovelReader.querySelector("#myt-snr-title").innerText = "";
+        SimpleNovelReader.querySelector("#myt-snr-content").innerHTML = "";
+        prev = SimpleNovelReader.querySelector("#myt-snr-prev");
+        prev.dataset.href = "";
+        prev.disabled = "true";
+        SimpleNovelReader.querySelector("#myt-snr-info").dataset.href = "";
+        next = SimpleNovelReader.querySelector("#myt-snr-next");
+        next.dataset.href = "";
+        next.disabled = "true";
+        return;
+    }
     document.title = data.pageTitle;
     SimpleNovelReader.querySelector("#myt-snr-title").innerText = data.title;
     SimpleNovelReader.querySelector("#myt-snr-content").innerHTML = data.content;
-    var prev = SimpleNovelReader.querySelector("#myt-snr-prev");
+    prev = SimpleNovelReader.querySelector("#myt-snr-prev");
     prev.dataset.href = data.prev;
     prev.disabled = !data.prev;
     SimpleNovelReader.querySelector("#myt-snr-info").dataset.href = data.info;
-    var next = SimpleNovelReader.querySelector("#myt-snr-next");
+    next = SimpleNovelReader.querySelector("#myt-snr-next");
     next.dataset.href = data.next;
     next.disabled = !data.next;
+}
+
+function loadPreload() {
+    /**
+     * @type {HTMLIFrameElement}
+     */
+    var preloadFrame = SimpleNovelReader.querySelector("#myt-snr-preload");
+    var doc = preloadFrame.contentWindow.document;
+    doc.querySelectorAll("audio").forEach(x => { x.autoplay = false; x.pause(); });
+    doc.querySelectorAll("video").forEach(x => { x.autoplay = false; x.pause(); });
+    loadPageData(extractPageData(doc));
+    SimpleNovelReader.querySelector("#myt-snr-content").scrollTop = 0;
 }
 
 /**
  * @param {string} url
  */
 function loadUrl(url) {
-    SimpleNovelReader.querySelector("#myt-snr-content").scrollTop = 0;
-    get(url).then(
-        xhr => {
-            loadPageData(extractPageData(xhr.response));
+    if (IsStandalonePage) {
+        loadPageData(extractPageData(document));
+    } else if (IsDynamicPage) {
+        /**
+         * @type {HTMLIFrameElement}
+         */
+        var preloadFrame = SimpleNovelReader.querySelector("#myt-snr-preload");
+        var childUrl = new URL(url);
+        childUrl.hash = "disable-simple-novel-reader";
+        if (preloadFrame.contentWindow && preloadFrame.src == childUrl.href) {
+            loadPageData(extractPageData(preloadFrame.contentWindow.document));
+            SimpleNovelReader.querySelector("#myt-snr-content").scrollTop = 0;
+        } else {
+            loadPageData(null);
+            preloadFrame.src = childUrl.href;
         }
-    );
+    } else {
+        get(url).then(
+            xhr => {
+                loadPageData(extractPageData(xhr.response));
+                SimpleNovelReader.querySelector("#myt-snr-content").scrollTop = 0;
+            }
+        );
+    }
 }
 
 /**
@@ -150,15 +218,15 @@ function toggle() {
 }
 
 function show(url = undefined) {
-    window.location.hash = "#simple-novel-reader";
+    window.location.hash = "simple-novel-reader";
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
-    if (url) {
-        var newUrl = new URL(url);
-        newUrl.hash = "#simple-novel-reader";
+    if (url || window.prevUrl != window.location) {
+        var newUrl = new URL(url ?? window.location);
+        newUrl.hash = "simple-novel-reader";
         history.pushState(null, "", newUrl.toString());
         SimpleNovelReader.scrollTop = 0;
-        loadUrl(url);
+        loadUrl(newUrl);
     }
 }
 
@@ -171,6 +239,7 @@ function hide() {
         document.documentElement.style.overflow = "";
         document.body.style.overflow = "";
     }
+    window.prevUrl = newUrl;
 }
 
 function toggleSettingDisplay() {
@@ -480,29 +549,26 @@ $$$$$replace$$$$$
     SimpleNovelReader.querySelector("#myt-snr-setting-font-family-custom-name").value = GM_getValue("config.font-family.custom", "");
     SimpleNovelReader.querySelector("#myt-snr-setting-font-family-custom-name").addEventListener("input", updateFontFamilyByInput);
 
+    SimpleNovelReader.querySelector("#myt-snr-preload").addEventListener("load", loadPreload);
+
     updateRadioButtonGroup("font-family", GM_getValue("config.font-family", "sans-serif"));
     updateRadioButtonGroup("color-scheme", GM_getValue("config.color-scheme", "auto"));
     updateCustomFontButtonStyle();
     updateContentStyle();
     updateCustomStyle();
-    loadUrl(window.location.href);
+    if (!IsDynamicPage) {
+        loadUrl(window.location.href);
+    }
     if (window.location.hash == "#simple-novel-reader") {
         SimpleNovelReader.style.top = "0";
         show();
     }
-    window.addEventListener("hashchange", detectHashChange);
     document.body.appendChild(SimpleNovelReader);
+    if (IsDynamicPage) {
+        loadUrl(window.location.href);
+    }
+    window.addEventListener("hashchange", detectHashChange);
 }
 
-const FontSizes = [
-    ["xx-small", "极小"],
-    ["x-small", "小"],
-    ["small", "较小"],
-    ["medium", "中"],
-    ["large", "较大"],
-    ["x-large", "大"],
-    ["xx-large", "极大"]
-];
-const SimpleNovelReader = document.createElement("div");
-const OriginalUrl = window.location.origin + window.location.pathname + window.location.search;
-main();
+if (!window.location.hash.includes("disable-simple-novel-reader"))
+    main();
