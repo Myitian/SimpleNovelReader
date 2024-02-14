@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.6
+// @version       0.7
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -27,6 +27,7 @@
 // @match         *://ys.mihoyo.com/main/news/detail/*
 // @match         *://sr.mihoyo.com/news/*
 // @match         *://zzz.mihoyo.com/news/*
+// @match         file:///*.txt
 // @grant         GM_getValue
 // @grant         GM_setValue
 // @grant         GM_deleteValue
@@ -34,10 +35,15 @@
 // @grant         GM_registerMenuCommand
 // ==/UserScript==
 const StandalonePageRegex = [
-    /.*:\/\/(?:sr|zzz)\.mihoyo\.com\/.*/
+    /.*:\/\/(?:sr|zzz)\.mihoyo\.com\/.*/,
+    /file:\/\/\/.*\.txt/
 ];
 const DynamicPageRegex = [
-    /.*:\/\/.*\.mihoyo\.com\/.*/
+    /.*:\/\/.*\.mihoyo\.com\/.*/,
+    /file:\/\/\/.*\.txt/
+];
+const ProcessLFRegex = [
+    /file:\/\/\/.*\.txt/
 ];
 const FontSizes = [
     ["xx-small", "极小"],
@@ -53,11 +59,13 @@ const OriginalUrl = window.location.origin + window.location.pathname + window.l
 const ActivePageRegex = PageRegex.find(x => x.test(window.location.href));
 const IsDynamicPage = DynamicPageRegex.findIndex(x => x.test(window.location.href)) != -1;
 const IsStandalonePage = StandalonePageRegex.findIndex(x => x.test(window.location.href)) != -1;
+const IsProcessingLF = ProcessLFRegex.findIndex(x => x.test(window.location.href)) != -1;
 
 /**
  * @param {Document} doc
  */
 function extractPageData(doc) {
+    var pageTitle = doc.title.trim();
     /**
      * @type {string}
      */
@@ -72,8 +80,9 @@ function extractPageData(doc) {
     var content = (
         doc.querySelector("#onearcxsbd,#cont-body,.pt-read-text,.article__bd") ??
         doc.querySelector(".article-content,#content,#chaptercontent,#nr,.article,.pt-read-cont,.main-wrap,.article__content,.news-detail__content") ??
-        doc.querySelector("article")
-    )?.innerHTML.replace("　", "");
+        doc.querySelector("article:not(#myt-snr-content)") ??
+        doc.querySelector("html>body>pre") // for txt in Firefox
+    )?.innerHTML.replaceAll("　", "");
     /**
      * @type {?string}
      */
@@ -96,8 +105,8 @@ function extractPageData(doc) {
         doc.querySelector(".bottem1>a:nth-child(3),.col-md-6.text-center>a[href]:nth-child(3),b>a.prevPage:nth-child(2),td.next>a,article>ul.pages>li:nth-child(3)>a,.page_chapter>ul>li:nth-child(3)>a,.pt-nextchapter,.buttombar__next:not(.buttombar__next--disabled),.article__ft>a[href]:nth-child(2)")
     )?.href;
     return {
-        pageTitle: doc.title.trim(),
-        title: title?.trim() ?? "",
+        pageTitle: pageTitle,
+        title: title?.trim() ?? pageTitle,
         content: content?.trim() ?? "",
         prev: ActivePageRegex.test(prev) ? prev.trim() : "",
         info: info?.trim() ?? "",
@@ -124,7 +133,12 @@ function loadPageData(data) {
     }
     document.title = data.pageTitle;
     SimpleNovelReader.querySelector("#myt-snr-title").innerText = data.title;
-    SimpleNovelReader.querySelector("#myt-snr-content").innerHTML = data.content;
+    if (IsProcessingLF) {
+        var lines = data.content.split("\n");
+        SimpleNovelReader.querySelector("#myt-snr-content").innerHTML = "<p>" + lines.join("</p><p>") + "</p>";
+    } else {
+        SimpleNovelReader.querySelector("#myt-snr-content").innerHTML = data.content;
+    }
     prev = SimpleNovelReader.querySelector("#myt-snr-prev");
     prev.dataset.href = data.prev;
     prev.disabled = !data.prev;
@@ -570,5 +584,6 @@ $$$$$replace$$$$$
     window.addEventListener("hashchange", detectHashChange);
 }
 
-if (!window.location.hash.includes("disable-simple-novel-reader"))
+if (!window.location.hash.includes("disable-simple-novel-reader")) {
     main();
+}
