@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.7
+// @version       0.7.1
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -525,6 +525,7 @@ $$$$$replace$$$$$
     unsafeWindow.SNRDebug_DeleteValue = debug_DeleteValue;
     unsafeWindow.SNRDebug_ListValues = debug_ListValues;
     GM_registerMenuCommand("切换阅读模式", toggle);
+    GM_registerMenuCommand("切换设置界面", toggleSettingDisplay);
     GM_registerMenuCommand("删除样式数据", deleteData);
     SimpleNovelReader.querySelector("#myt-snr-exit").addEventListener("click", hide);
     SimpleNovelReader.querySelector("#myt-snr-settings").addEventListener("click", toggleSettingDisplay);
