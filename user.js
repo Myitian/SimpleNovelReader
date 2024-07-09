@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          SimpleNovelReader
 // @namespace     net.myitian.js.SimpleNovelReader
-// @version       0.7.1
+// @version       0.7.2
 // @description   简单的笔趣阁类网站小说阅读器
 // @source        https://github.com/Myitian/SimpleNovelReader
 // @author        Myitian
@@ -13,6 +13,7 @@
 // @match         *://*.biqiuge.net/*_*/*.html*
 // @match         *://*.biquge11.cc/read/*/*.html*
 // @match         *://*.bqgpp.com/read/*/*.html*
+// @match         *://*.qe19.cc/read/*/*.html
 // @match         *://*.biquge66.net/book/*/*.html*
 // @match         *://*.52bqg.org/book_*/*.html*
 // @match         *://*.bqg78.cc/book/*/*.html*
@@ -23,6 +24,13 @@
 // @match         *://*.xyyuedu.com/writer/*/*/*.html*
 // @match         *://*.wxzpyd.com/novel/chapter/*.html*
 // @match         *://*.e365xs.com/*/read_*.html*
+// @match         *://*.xbanxia.com/books/*/*.html
+// @match         *://*.faloo.com/*.html
+// @match         *://funs.me/text/*/*.html
+// @match         *://*.trxs.cc/tongren/*/*.html
+// @match         *://trxs.cc/tongren/*/*.html
+// @match         *://*.hjwzw.com/Book/Read/*,*
+// @match         *://www.69shuba.pro/txt/*/*
 // @match         *://bh3.mihoyo.com/news/*
 // @match         *://ys.mihoyo.com/main/news/detail/*
 // @match         *://sr.mihoyo.com/news/*
@@ -43,6 +51,7 @@ const PageRegex = [
     /.*:\/\/.*\.biqiuge\.net\/.*_.*\/.*\.html.*/,
     /.*:\/\/.*\.biquge11\.cc\/read\/.*\/.*\.html.*/,
     /.*:\/\/.*\.bqgpp\.com\/read\/.*\/.*\.html.*/,
+    /.*:\/\/.*\.qe19\.cc\/read\/.*\/.*\.html/,
     /.*:\/\/.*\.biquge66\.net\/book\/.*\/.*\.html.*/,
     /.*:\/\/.*\.52bqg\.org\/book_.*\/.*\.html.*/,
     /.*:\/\/.*\.bqg78\.cc\/book\/.*\/.*\.html.*/,
@@ -53,6 +62,13 @@ const PageRegex = [
     /.*:\/\/.*\.xyyuedu\.com\/writer\/.*\/.*\/.*\.html.*/,
     /.*:\/\/.*\.wxzpyd\.com\/novel\/chapter\/.*\.html.*/,
     /.*:\/\/.*\.e365xs\.com\/.*\/read_.*\.html.*/,
+    /.*:\/\/.*\.xbanxia\.com\/books\/.*\/.*\.html/,
+    /.*:\/\/.*\.faloo\.com\/.*\.html/,
+    /.*:\/\/funs\.me\/text\/.*\/.*\.html/,
+    /.*:\/\/.*\.trxs\.cc\/tongren\/.*\/.*\.html/,
+    /.*:\/\/trxs\.cc\/tongren\/.*\/.*\.html/,
+    /.*:\/\/.*\.hjwzw\.com\/Book\/Read\/.*,.*/,
+    /.*:\/\/www\.69shuba\.pro\/txt\/.*\/.*/,
     /.*:\/\/bh3\.mihoyo\.com\/news\/.*/,
     /.*:\/\/ys\.mihoyo\.com\/main\/news\/detail\/.*/,
     /.*:\/\/sr\.mihoyo\.com\/news\/.*/,
@@ -96,15 +112,15 @@ function extractPageData(doc) {
      */
     var title = (
         doc.querySelector("#arcxs_title>h1,.bookname>h1,.pt-read-cont>.pt-read-title>h1,.pt-read>div") ??
-        doc.querySelector(".article-title,.bookname,#nr_title,.title,.zhong,.cont-title,.article__title,.news-detail__title") ??
+        doc.querySelector(".article-title,.bookname,#nr_title,.title,.zhong,.cont-title,.article__title,.news-detail__title,tr>td[background='/image/bgheader.gif']") ??
         doc.querySelector("h1")
     )?.innerText;
     /**
      * @type {string}
      */
     var content = (
-        doc.querySelector("#onearcxsbd,#cont-body,.pt-read-text,.article__bd") ??
-        doc.querySelector(".article-content,#content,#chaptercontent,#nr,.article,.pt-read-cont,.main-wrap,.article__content,.news-detail__content") ??
+        doc.querySelector("#onearcxsbd,#cont-body,.pt-read-text,.article__bd,#nr1") ??
+        doc.querySelector(".article-content,#content,#chaptercontent,#nr,.article,.pt-read-cont,.main-wrap,.article__content,.news-detail__content,.read_chapterDetail,.txtnav,.nodeContent,#AllySite+div,#ChSize") ??
         doc.querySelector("article:not(#myt-snr-content)") ??
         doc.querySelector("html>body>pre") // for txt in Firefox
     )?.innerHTML.replaceAll("　", "");
@@ -113,21 +129,24 @@ function extractPageData(doc) {
      */
     var prev = (
         doc.querySelector("[rel=prev],#prev_url,#pb_prev,#link-preview,.pt-prechapter>a") ??
-        doc.querySelector(".bottem1>a:nth-child(1),.col-md-6.text-center>a[href]:nth-child(1),b>a.prevPage:nth-child(1),td.prev>a,article>ul.pages>li:nth-child(2)>a,.page_chapter>ul>li:nth-child(1)>a,.pt-prechapter,.buttombar__prev:not(.buttombar__prev--disabled),.article__ft>a[href]:nth-child(1)")
+        doc.querySelector(".bottem1>a:nth-child(1),.col-md-6.text-center>a[href]:nth-child(1),b>a.prevPage:nth-child(1),td.prev>a,article>ul.pages>li:nth-child(2)>a,.page_chapter>ul>li:nth-child(1)>a,.pt-prechapter,.buttombar__prev:not(.buttombar__prev--disabled),.article__ft>a[href]:nth-child(1),.pageNav>a:nth-child(2),.page1>a:nth-child(1),.bl_pre,center>a.pages:nth-of-type(1)") ??
+        doc.querySelector("body>table:has(#AllySite)+div>a:nth-child(1)")
     )?.href;
     /**
      * @type {?string}
      */
     var info = (
         doc.querySelector("[rel='category tag'],#info_url,#pb_mulu,#link-indexz,.pt-catalogue>a") ??
-        doc.querySelector(".bottem1>a:nth-child(2),.col-md-6.text-center>a[href]:nth-child(2),a.returnIndex,td.mulu>a,article>ul.pages>li:nth-child(4)>a,.page_chapter>ul>li:nth-child(2)>a,.pt-prechapter+a,.news-detail .btn-back,.topbar__back,.nuxt-link-active")
+        doc.querySelector(".bottem1>a:nth-child(2),.col-md-6.text-center>a[href]:nth-child(2),a.returnIndex,td.mulu>a,article>ul.pages>li:nth-child(4)>a,.page_chapter>ul>li:nth-child(2)>a,.pt-prechapter+a,.news-detail .btn-back,.topbar__back,.nuxt-link-active,.pageNav>a:nth-child(5),.page1>a:nth-child(3),#page_muLu,tr>td>li>a:nth-of-type(3)") ??
+        doc.querySelector("body>table:has(#AllySite)+div>a:nth-child(2)")
     )?.href;
     /**
      * @type {?string}
      */
     var next = (
         doc.querySelector("[rel=next],#next_url,#pb_next,#link-next,.pt-nextchapter>a") ??
-        doc.querySelector(".bottem1>a:nth-child(3),.col-md-6.text-center>a[href]:nth-child(3),b>a.prevPage:nth-child(2),td.next>a,article>ul.pages>li:nth-child(3)>a,.page_chapter>ul>li:nth-child(3)>a,.pt-nextchapter,.buttombar__next:not(.buttombar__next--disabled),.article__ft>a[href]:nth-child(2)")
+        doc.querySelector(".bottem1>a:nth-child(3),.col-md-6.text-center>a[href]:nth-child(3),b>a.prevPage:nth-child(2),td.next>a,article>ul.pages>li:nth-child(3)>a,.page_chapter>ul>li:nth-child(3)>a,.pt-nextchapter,.buttombar__next:not(.buttombar__next--disabled),.article__ft>a[href]:nth-child(2),.pageNav>a:nth-child(3),.page1>a:nth-child(4),.bl_next,center>a.pages:nth-of-type(2)") ??
+        doc.querySelector("body>table:has(#AllySite)+div>a:nth-child(3)")
     )?.href;
     return {
         pageTitle: pageTitle,
@@ -774,6 +793,7 @@ function main() {
     }
 
     .x-myt-button {
+        display: unset;
         border: none;
         background: transparent no-repeat center center;
         padding: .5em 1em;
@@ -829,6 +849,7 @@ function main() {
     }
 
     #myt-snr-header {
+        position: unset;
         text-align: center;
         max-width: var(--x-max-width);
         margin: auto;

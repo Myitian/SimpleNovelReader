@@ -6,7 +6,8 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "./Merger"
+            "command": "./Merger",
+            "problemMatcher": []
         }
     ]
 }
