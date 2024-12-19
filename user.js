@@ -358,7 +358,7 @@ function updateCustomFontButtonStyle() {
     const label = SimpleNovelReader.querySelector("[for=myt-snr-setting-font-family-custom]");
     label.style.fontFamily = GM_getValue("config.font-family.custom", "sans-serif");
     /** @type {HTMLInputElement} */
-    const input = SimpleNovelReader.querySelector("#myt-snr-setting-font-family-custom-name")
+    const input = SimpleNovelReader.querySelector("#myt-snr-setting-font-family-custom-name");
     input.style.fontFamily = GM_getValue("config.font-family.custom", "sans-serif");
 }
 
@@ -367,13 +367,13 @@ function updateContentStyle() {
     const lineHeightStr = GM_getValue("config.line-height", 1.5).toFixed(1);
     const maxWidthStr = GM_getValue("config.max-width", 40) + "em";
     /** @type {HTMLSpanElement} */
-    const fontSizeE = SimpleNovelReader.querySelector("#myt-snr-setting-font-size-value")
+    const fontSizeE = SimpleNovelReader.querySelector("#myt-snr-setting-font-size-value");
     fontSizeE.innerText = fontSizeStr[1];
     /** @type {HTMLSpanElement} */
-    const lineHeightE = SimpleNovelReader.querySelector("#myt-snr-setting-line-height-value")
+    const lineHeightE = SimpleNovelReader.querySelector("#myt-snr-setting-line-height-value");
     lineHeightE.innerText = lineHeightStr;
     /** @type {HTMLSpanElement} */
-    const maxWidthE = SimpleNovelReader.querySelector("#myt-snr-setting-max-width-value")
+    const maxWidthE = SimpleNovelReader.querySelector("#myt-snr-setting-max-width-value");
     maxWidthE.innerText = maxWidthStr;
     SimpleNovelReader.querySelector("#myt-snr-content-style").innerHTML = `
 #myt-snr-root * {
