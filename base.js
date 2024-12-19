@@ -128,22 +128,7 @@ function extractPageData(doc) {
  * @param {?{pageTitle:string,title:string,content:string,prev:string,info:string,next:string}} data
  */
 function loadPageData(data) {
-    if (!data) {
-        SimpleNovelReader.querySelector("#myt-snr-title").innerHTML = "";
-        SimpleNovelReader.querySelector("#myt-snr-content").innerHTML = "";
-        /** @type {HTMLButtonElement} */
-        const prev = SimpleNovelReader.querySelector("#myt-snr-prev");
-        prev.dataset.href = "";
-        prev.disabled = true;
-        /** @type {HTMLButtonElement} */
-        const info = SimpleNovelReader.querySelector("#myt-snr-info");
-        info.dataset.href = "";
-        /** @type {HTMLButtonElement} */
-        const next = SimpleNovelReader.querySelector("#myt-snr-next");
-        next.dataset.href = "";
-        next.disabled = true;
-        return;
-    } else {
+    if (data) {
         document.title = data.pageTitle;
         /** @type {HTMLHeadingElement} */
         const title = SimpleNovelReader.querySelector("#myt-snr-title");
@@ -165,15 +150,37 @@ function loadPageData(data) {
         const next = SimpleNovelReader.querySelector("#myt-snr-next");
         next.dataset.href = data.next;
         next.disabled = !data.next;
+    } else {
+        SimpleNovelReader.querySelector("#myt-snr-title").innerHTML = "";
+        SimpleNovelReader.querySelector("#myt-snr-content").innerHTML = "";
+        /** @type {HTMLButtonElement} */
+        const prev = SimpleNovelReader.querySelector("#myt-snr-prev");
+        prev.dataset.href = "";
+        prev.disabled = true;
+        /** @type {HTMLButtonElement} */
+        const info = SimpleNovelReader.querySelector("#myt-snr-info");
+        info.dataset.href = "";
+        /** @type {HTMLButtonElement} */
+        const next = SimpleNovelReader.querySelector("#myt-snr-next");
+        next.dataset.href = "";
+        next.disabled = true;
     }
+}
+
+/**
+ * @param {HTMLMediaElement} media 
+ */
+function pause(media) {
+    media.autoplay = false;
+    media.pause();
 }
 
 function loadPreload() {
     /** @type {HTMLIFrameElement} */
     const preloadFrame = SimpleNovelReader.querySelector("#myt-snr-preload");
     const doc = preloadFrame.contentWindow.document;
-    doc.querySelectorAll("audio").forEach(x => { x.autoplay = false; x.pause(); });
-    doc.querySelectorAll("video").forEach(x => { x.autoplay = false; x.pause(); });
+    doc.querySelectorAll("audio").forEach(pause);
+    doc.querySelectorAll("video").forEach(pause);
     loadPageData(extractPageData(doc));
     SimpleNovelReader.querySelector("#myt-snr-content").scrollTop = 0;
 }
@@ -249,12 +256,16 @@ function toggle() {
 
 let prevUrl = "";
 
+/**
+ * 
+ * @param {?string} url 
+ */
 function show(url = undefined) {
     window.location.hash = "simple-novel-reader";
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     if (url || prevUrl != window.location.href) {
-        const newUrl = new URL(url ?? window.location);
+        const newUrl = new URL(url ?? window.location.href);
         newUrl.hash = "simple-novel-reader";
         history.pushState(null, "", newUrl.toString());
         SimpleNovelReader.scrollTop = 0;
@@ -295,6 +306,14 @@ function switchChapter(event) {
     const btn = event.target;
     if (btn.dataset.href) {
         show(btn.dataset.href);
+    }
+}
+
+function viewInfo() {
+    /** @type {HTMLButtonElement} */
+    const e = SimpleNovelReader.querySelector("#myt-snr-info");
+    if (e?.dataset.href) {
+        window.location.href = e.dataset.href;
     }
 }
 
@@ -542,13 +561,7 @@ $$$$$replace$$$$$
     SimpleNovelReader.querySelector("#myt-snr-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-close-settings").addEventListener("click", toggleSettingDisplay);
     SimpleNovelReader.querySelector("#myt-snr-prev").addEventListener("click", switchChapter);
-    SimpleNovelReader.querySelector("#myt-snr-info").addEventListener("click", () => {
-        /** @type {HTMLButtonElement} */
-        const e = SimpleNovelReader.querySelector("#myt-snr-info");
-        if (e?.dataset.href) {
-            window.location.href = e.dataset.href;
-        }
-    });
+    SimpleNovelReader.querySelector("#myt-snr-info").addEventListener("click", viewInfo);
     SimpleNovelReader.querySelector("#myt-snr-next").addEventListener("click", switchChapter);
 
     SimpleNovelReader.querySelector("#myt-snr-setting-font-size-minus").addEventListener("click", () => updateFontSize(-1));
