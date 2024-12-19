@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "ES2021",
+        "checkJs": true,
+        "typeRoots": [
+            "./defs"
+        ]
+    },
+    "include": [
+        "base.js",
+        "./defs/*.d.ts"
+    ]
+}
